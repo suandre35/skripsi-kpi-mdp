@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class IndikatorKPI extends Model
+class IndikatorKpi extends Model
 {
     use HasFactory;
 
@@ -21,6 +21,6 @@ class IndikatorKPI extends Model
 
     public function kategori()
     {
-        return $this->belongTo(KategoriKpi::class, 'id_kategori', 'id_kategori');
+        return $this->belongsTo(KategoriKpi::class, 'id_kategori', 'id_kategori');
     }
 }
