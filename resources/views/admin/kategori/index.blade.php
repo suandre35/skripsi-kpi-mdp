@@ -51,14 +51,6 @@
                                     <a href="{{ route('kategori.edit', $kategori->id_kategori) }}" class="text-indigo-600 hover:text-indigo-900">
                                         Edit
                                     </a>
-
-                                    <form action="{{ route('kategori.destroy', $kategori->id_kategori) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kategori ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">
-                                            Hapus
-                                        </button>
-                                    </form>
                                 </td>
                             </tr>
                             @empty

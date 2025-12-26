@@ -92,9 +92,6 @@ class IndikatorKpiController extends Controller
      */
     public function destroy(string $id)
     {
-        $indikator = IndikatorKpi::findOrFail($id);
-        $indikator->delete();
-
-        return redirect()->route('indikator.index')->with('success', 'Indikator berhasil dihapus!');
+        return redirect()->back()->with('error', 'Indikator tidak boleh dihapus demi riwayat penilaian. Gunakan status Nonaktif.');
     }
 }

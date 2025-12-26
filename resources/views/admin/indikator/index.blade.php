@@ -53,14 +53,6 @@
                                     <a href="{{ route('indikator.edit', $indikator->id_indikator) }}" class="text-indigo-600 hover:text-indigo-900">
                                         Edit
                                     </a>
-
-                                    <form action="{{ route('indikator.destroy', $indikator->id_indikator) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus indikator ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">
-                                            Hapus
-                                        </button>
-                                    </form>
                                 </td>
                             </tr>
                             @empty

@@ -88,9 +88,6 @@ class KategoriKpiController extends Controller
      */
     public function destroy(string $id)
     {
-        $kategori = KategoriKpi::findOrFail($id);
-        $kategori->delete();
-
-        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus!');
+        return redirect()->back()->with('error', 'Indikator tidak boleh dihapus demi riwayat penilaian. Gunakan status Nonaktif.');
     }
 }
