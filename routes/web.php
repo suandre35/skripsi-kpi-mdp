@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\KategoriKpiController;
 use App\Http\Controllers\IndikatorKpiController;
 use App\Http\Controllers\BobotKpiController;
@@ -21,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::resource('users', UserController::class);
     Route::resource('kategori', KategoriKpiController::class);
     Route::resource('indikator', IndikatorKpiController::class);
     Route::resource('bobot', BobotKpiController::class);
