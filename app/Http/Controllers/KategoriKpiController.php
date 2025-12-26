@@ -57,7 +57,9 @@ class KategoriKpiController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $kategori = KategoriKpi::findOrFail($id);
+
+        return view('admin.kategori.edit', compact('kategori'));
     }
 
     /**
@@ -65,7 +67,20 @@ class KategoriKpiController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'nama_kategori' => 'required|string|max:100',
+            'deskripsi' => 'nullable|string',
+            'status' => 'required|in:Aktif,Nonaktif',
+        ]);
+
+        $kategori = KategoriKpi::findOrFail($id);
+        $kategori->update([
+            'nama_kategori' => $request->nama_kategori,
+            'deskripsi' => $request->deskripsi,
+            'status' => $request->status,
+        ]);
+
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui!');
     }
 
     /**
@@ -73,6 +88,9 @@ class KategoriKpiController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $kategori = KategoriKpi::findOrFail($id);
+        $kategori->delete();
+
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus!');
     }
 }
