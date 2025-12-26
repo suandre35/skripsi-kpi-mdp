@@ -26,6 +26,12 @@ class User extends Authenticatable
         'status',
     ];
 
+    public function karyawan()
+    {
+        // Parameter: Model tujuan, Foreign Key di tabel tujuan, Local Key di tabel ini
+        return $this->hasOne(Karyawan::class, 'id_user', 'id_user');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
