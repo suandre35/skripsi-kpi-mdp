@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KategoriKpiController;
 use App\Http\Controllers\IndikatorKpiController;
+use App\Http\Controllers\BobotKpiController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,6 +21,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('kategori', KategoriKpiController::class);
     Route::resource('indikator', IndikatorKpiController::class);
+    Route::resource('bobot', BobotKpiController::class);
 });
 
 require __DIR__.'/auth.php';
