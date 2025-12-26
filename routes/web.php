@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KategoriKpiController;
 use App\Http\Controllers\IndikatorKpiController;
 use App\Http\Controllers\BobotKpiController;
@@ -25,6 +26,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('users', UserController::class);
     Route::resource('divisi', DivisiController::class);
+    Route::resource('karyawan', KaryawanController::class);
     Route::resource('kategori', KategoriKpiController::class);
     Route::resource('indikator', IndikatorKpiController::class);
     Route::resource('bobot', BobotKpiController::class);

@@ -9,7 +9,7 @@ class Karyawan extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id_karyawan'; // Penting!
+    protected $primaryKey = 'id_karyawan';
 
     protected $fillable = [
         'id_user',
@@ -30,11 +30,5 @@ class Karyawan extends Model
     public function divisi()
     {
         return $this->belongsTo(Divisi::class, 'id_divisi', 'id_divisi');
-    }
-
-    // Relasi: Karyawan MUNGKIN memimpin satu Divisi (Sebagai Manajer)
-    public function memimpinDivisi()
-    {
-        return $this->hasOne(Divisi::class, 'id_kepala_divisi', 'id_karyawan');
     }
 }
