@@ -9,21 +9,17 @@ class Divisi extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id_divisi'; // Penting! Karena bukan 'id'
+    protected $primaryKey = 'id_divisi';
     
     protected $fillable = [
         'nama_divisi',
         'deskripsi',
-        'id_kepala_divisi',
+        'id_manajer',
+        'status',
     ];
-
-    public function anggotas()
-    {
-        return $this->hasMany(Karyawan::class, 'id_divisi', 'id_divisi');
-    }
 
     public function kepalaDivisi()
     {
-        return $this->belongsTo(Karyawan::class, 'id_kepala_divisi', 'id_karyawan');
+        return $this->belongsTo(Karyawan::class, 'id_manajer', 'id_user');
     }
 }

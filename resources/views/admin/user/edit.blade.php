@@ -61,7 +61,7 @@
                                 <select name="role" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm sm:text-sm">
                                     <option value="Karyawan" {{ $user->role == 'Karyawan' ? 'selected' : '' }}>Karyawan</option>
                                     <option value="Manajer" {{ $user->role == 'Manajer' ? 'selected' : '' }}>Manajer</option>
-                                    <option value="Admin" {{ $user->role == 'Admin' ? 'selected' : '' }}>Admin</option>
+                                    <option value="HRD" {{ $user->role == 'HRD' ? 'selected' : '' }}>HRD</option>
                                 </select>
                             </div>
                             <div>

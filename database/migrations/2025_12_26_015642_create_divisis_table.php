@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id('id_divisi');
             $table->string('nama_divisi');
             $table->text('deskripsi')->nullable();
-            $table->unsignedBigInteger('id_kepala_divisi')->nullable()->unique();
+            $table->foreignId('id_manajer')->nullable()->constrained('users', 'id_user')->onDelete('set null');
+            $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->timestamps();
         });
     }

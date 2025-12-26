@@ -5,37 +5,35 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Divisi;
 use App\Models\Karyawan;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
         // =========================================================
-        // 1. BUAT DAFTAR DIVISI SESUAI GAMBAR STRUKTUR ORGANISASI
+        // 1. BUAT DAFTAR DIVISI
         // =========================================================
         
-        // Divisi khusus untuk Pimpinan Tertinggi
+        // Divisi Direksi
         $divDireksi = Divisi::create([
             'nama_divisi' => 'Direksi',
-            'deskripsi' => 'Pimpinan tertinggi perusahaan (Direktur & Wakil).',
+            'status' => 'Aktif',
+            // 'deskripsi' dihapus karena tidak ada di tabel
         ]);
 
-        // Daftar Divisi Operasional (Sesuai kotak ungu di gambar)
+        // Daftar Divisi Operasional
         $namaDivisi = ['HRD', 'Logistik', 'Keuangan', 'Accounting', 'Service', 'Store'];
         $listDivisi = [];
 
         foreach ($namaDivisi as $nama) {
             $listDivisi[$nama] = Divisi::create([
                 'nama_divisi' => $nama,
-                'deskripsi' => "Divisi operasional bagian $nama.",
+                'status' => 'Aktif',
             ]);
         }
 
@@ -46,7 +44,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Bapak Direktur',
             'email' => 'direktur@kantor.com',
             'password' => Hash::make('password'),
-            'role' => 'Manajer', // Di sistem dianggap Manajer Tertinggi
+            'role' => 'Manajer', // Role Manajer untuk level pimpinan
             'status' => 'Aktif',
         ]);
 
@@ -59,60 +57,60 @@ class DatabaseSeeder extends Seeder
             'status_karyawan' => 'Aktif',
         ]);
         
-        // Set dia sebagai kepala Divisi Direksi
-        $divDireksi->update(['id_kepala_divisi' => 1]); // ID 1 karena dia created pertama
+        // UPDATE MANAJER DIVISI (Pakai id_manajer ke User, BUKAN Karyawan)
+        $divDireksi->update(['id_manajer' => $userDirektur->id_user]);
 
 
-        // =========================================================
-        // 3. CONTOH USER: MANAGER HRD (Admin Sistem)
+        /// =========================================================
+        // 3. CONTOH USER: MANAGER HRD (Sebagai Admin Sistem)
         // =========================================================
         $userHRD = User::create([
-            'name' => 'Manager HRD',
+            'name' => 'Manajer HRD',
             'email' => 'hrd@kantor.com',
             'password' => Hash::make('password'),
-            'role' => 'HRD', // Role khusus HRD
+            'role' => 'HRD',
             'status' => 'Aktif',
         ]);
 
-        $karyawanHRD = Karyawan::create([
+        Karyawan::create([
             'id_user' => $userHRD->id_user,
             'id_divisi' => $listDivisi['HRD']->id_divisi,
             'nik' => '1001',
-            'nama_lengkap' => 'Siti Aminah (Manager HRD)',
+            'nama_lengkap' => 'Siti Aminah (Manajer HRD)',
             'tanggal_masuk' => '2015-05-20',
             'status_karyawan' => 'Aktif',
         ]);
 
-        // Update Divisi HRD punya kepala
-        $listDivisi['HRD']->update(['id_kepala_divisi' => $karyawanHRD->id_karyawan]);
+        // Update Divisi HRD (Manajer = User HRD)
+        $listDivisi['HRD']->update(['id_manajer' => $userHRD->id_user]);
 
 
         // =========================================================
-        // 4. CONTOH USER: MANAGER STORE (Untuk Tes Penilaian)
+        // 4. CONTOH USER: MANAJER STORE (Untuk Tes Penilaian)
         // =========================================================
-        $userManagerStore = User::create([
-            'name' => 'Manager Store',
-            'email' => 'manager.store@kantor.com',
+        $userManajerStore = User::create([
+            'name' => 'Manajer Store',
+            'email' => 'manajer.store@kantor.com',
             'password' => Hash::make('password'),
             'role' => 'Manajer',
             'status' => 'Aktif',
         ]);
 
-        $karyawanManagerStore = Karyawan::create([
-            'id_user' => $userManagerStore->id_user,
-            'id_divisi' => $listDivisi['Store']->id_divisi, // Masuk Divisi Store
+        Karyawan::create([
+            'id_user' => $userManajerStore->id_user,
+            'id_divisi' => $listDivisi['Store']->id_divisi,
             'nik' => '6001',
-            'nama_lengkap' => 'Andi Pratama (Manager Store)',
+            'nama_lengkap' => 'Andi Pratama (Manajer Store)',
             'tanggal_masuk' => '2018-03-10',
             'status_karyawan' => 'Aktif',
         ]);
 
-        // Update Divisi Store -> Kepalanya adalah Andi
-        $listDivisi['Store']->update(['id_kepala_divisi' => $karyawanManagerStore->id_karyawan]);
+        // Update Divisi Store (Manajer = User Manajer Store)
+        $listDivisi['Store']->update(['id_manajer' => $userManajerStore->id_user]);
 
 
         // =========================================================
-        // 5. CONTOH USER: STAFF STORE (Bawahan Manager Store)
+        // 5. CONTOH USER: STAFF STORE (Bawahan Manajer Store)
         // =========================================================
         $userStaffStore = User::create([
             'name' => 'Staff Store',
@@ -124,7 +122,7 @@ class DatabaseSeeder extends Seeder
 
         Karyawan::create([
             'id_user' => $userStaffStore->id_user,
-            'id_divisi' => $listDivisi['Store']->id_divisi, // Satu divisi sama Manager Store
+            'id_divisi' => $listDivisi['Store']->id_divisi,
             'nik' => '6005',
             'nama_lengkap' => 'Rina Wati (Staff Store)',
             'tanggal_masuk' => '2022-08-17',

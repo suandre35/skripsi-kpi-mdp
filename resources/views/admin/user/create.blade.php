@@ -60,7 +60,7 @@
                                 <select name="role" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm sm:text-sm">
                                     <option value="Karyawan">Karyawan</option>
                                     <option value="Manajer">Manajer</option>
-                                    <option value="Admin">Admin</option>
+                                    <option value="HRD">HRD</option>
                                 </select>
                             </div>
                             <div>

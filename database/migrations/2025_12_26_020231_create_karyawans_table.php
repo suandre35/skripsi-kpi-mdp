@@ -21,12 +21,6 @@ return new class extends Migration
             $table->enum('status_karyawan', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->timestamps();
         });
-        Schema::table('divisis', function (Blueprint $table) {
-            $table->foreign('id_kepala_divisi')
-                  ->references('id_karyawan')
-                  ->on('karyawans')
-                  ->onDelete('set null');
-        });
     }
 
     /**
@@ -34,9 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('divisis', function (Blueprint $table) {
-            $table->dropForeign(['id_kepala_divisi']);
-        });
         Schema::dropIfExists('karyawans');
     }
 };

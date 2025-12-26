@@ -35,7 +35,7 @@ class UserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role'     => ['required', 'in:Admin,Manajer,Karyawan'],
+            'role'     => ['required', 'in:HRD,Manajer,Karyawan'],
             'status'   => ['required', 'in:Aktif,Nonaktif'],
         ]);
 
@@ -77,7 +77,7 @@ class UserController extends Controller
         $request->validate([
             'name'   => ['required', 'string', 'max:255'],
             'email'  => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id_user.',id_user'],
-            'role'   => ['required', 'in:Admin,Manajer,Karyawan'],
+            'role'   => ['required', 'in:HRD,Manajer,Karyawan'],
             'status' => ['required', 'in:Aktif,Nonaktif'],
         ]);
 
