@@ -18,8 +18,8 @@ class Divisi extends Model
         'status',
     ];
 
-    public function kepalaDivisi()
+    public function manajer()
     {
-        return $this->belongsTo(Karyawan::class, 'id_manajer', 'id_user');
+        return $this->belongsTo(User::class, 'id_manajer', 'id_user');
     }
 }
