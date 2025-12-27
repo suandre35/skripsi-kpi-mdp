@@ -16,6 +16,7 @@ class IndikatorKpi extends Model
         'nama_indikator',
         'deskripsi',
         'satuan_pengukuran',
+        'target_divisi',
         'status',
     ];
 
@@ -23,4 +24,11 @@ class IndikatorKpi extends Model
     {
         return $this->belongsTo(KategoriKpi::class, 'id_kategori', 'id_kategori');
     }
+    public function bobot()
+    {
+        return $this->hasMany(BobotKpi::class, 'id_indikator', 'id_indikator');
+    }
+    protected $casts = [
+        'target_divisi' => 'array',
+    ];
 }

@@ -36,6 +36,6 @@ class PenilaianHeader extends Model
 
     public function details()
     {
-        return $this->hasMany(DetailPenilaian::class, 'id_penilaianHeader', 'id_penilaianHeader');
+        return $this->hasMany(PenilaianDetail::class, 'id_penilaianHeader', 'id_penilaianHeader');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\IndikatorKpi;
 use App\Models\KategoriKpi;
+use App\Models\Divisi;
 
 class IndikatorKpiController extends Controller
 {
@@ -14,8 +15,9 @@ class IndikatorKpiController extends Controller
     public function index()
     {
         $indikators = IndikatorKpi::with('kategori')->get();
+        $allDivisi = Divisi::all()->pluck('nama_divisi', 'id_divisi');
 
-        return view('admin.indikator.index', compact('indikators'));
+        return view('admin.indikator.index', compact('indikators', 'allDivisi'));
     }
 
     /**
@@ -24,8 +26,9 @@ class IndikatorKpiController extends Controller
     public function create()
     {
         $kategoris = KategoriKpi::where('status', 'Aktif')->get();
+        $divisis = Divisi::where('status', 'Aktif')->get();
         
-        return view('admin.indikator.create', compact('kategoris'));
+        return view('admin.indikator.create', compact('kategoris', 'divisis'));
     }
 
     /**
@@ -35,6 +38,8 @@ class IndikatorKpiController extends Controller
     {
         $request->validate([
             'id_kategori'   => 'required|exists:kategori_kpis,id_kategori',
+            'target_divisi'     => 'required|array',
+            'target_divisi.*'   => 'exists:divisis,id_divisi',
             'nama_indikator'        => 'required|string|max:150',
             'satuan_pengukuran'     => 'nullable|string|max:50', // Contoh: %, Poin, Kali
             'deskripsi'     => 'nullable|string',
@@ -64,8 +69,9 @@ class IndikatorKpiController extends Controller
     {
         $indikator = IndikatorKpi::findOrFail($id);
         $kategoris = KategoriKpi::where('status', 'Aktif')->get();
+        $divisis = Divisi::where('status', 'Aktif')->get();
 
-        return view('admin.indikator.edit', compact('indikator', 'kategoris'));
+        return view('admin.indikator.edit', compact('indikator', 'kategoris','divisis'));
     }
 
     /**
@@ -75,6 +81,8 @@ class IndikatorKpiController extends Controller
     {
         $request->validate([
             'id_kategori'       => 'required|exists:kategori_kpis,id_kategori',
+            'target_divisi'     => 'required|array', 
+            'target_divisi.*'   => 'exists:divisis,id_divisi',
             'nama_indikator'    => 'required|string|max:150',
             'satuan_pengukuran' => 'nullable|string|max:50',
             'deskripsi'         => 'nullable|string',

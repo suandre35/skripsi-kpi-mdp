@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('indikator_kpis', function (Blueprint $table) {
             $table->id('id_indikator');
             $table->foreignId('id_kategori')->constrained('kategori_kpis', 'id_kategori')->onDelete('cascade');
+            $table->foreignId('id_divisi')->constrained('divisis', 'id_divisi')->onDelete('cascade');
             $table->string('nama_indikator');
             $table->text('deskripsi')->nullable();
             $table->string('satuan_pengukuran')->nullable();
