@@ -10,6 +10,7 @@ use App\Http\Controllers\IndikatorKpiController;
 use App\Http\Controllers\BobotKpiController;
 use App\Http\Controllers\TargetKpiController;
 use App\Http\Controllers\PeriodeEvaluasiController;
+use App\Http\Controllers\PenilaianController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('bobot', BobotKpiController::class);
     Route::resource('target', TargetKpiController::class);
     Route::resource('periode', PeriodeEvaluasiController::class);
+    Route::resource('penilaian', PenilaianController::class);
 });
 
 require __DIR__.'/auth.php';
