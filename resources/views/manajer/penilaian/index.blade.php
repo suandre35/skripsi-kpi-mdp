@@ -1,32 +1,27 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Riwayat Penilaian KPI') }}
+            {{ __('Monitoring Aktivitas Harian (Log)') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- Notifikasi Sukses/Error --}}
-            @if(session('success')) 
-                <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm">
+            {{-- Notifikasi Sukses --}}
+            @if(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
                     {{ session('success') }}
-                </div> 
-            @endif
-            @if(session('error')) 
-                <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm">
-                    {{ session('error') }}
-                </div> 
+                </div>
             @endif
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-medium">Daftar Hasil Evaluasi</h3>
-                        <a href="{{ route('penilaian.create') }}" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded shadow">
-                            + Input Penilaian Baru
+                        <h3 class="text-lg font-bold">Riwayat Input Aktivitas Tim</h3>
+                        <a href="{{ route('penilaian.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+                            + Input Log Hari Ini
                         </a>
                     </div>
 
@@ -34,63 +29,96 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Periode</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Nama Karyawan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Tanggal Input</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Penilai</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Total Skor</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Aksi</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Aktivitas (Indikator)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Realisasi</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Catatan</th>
+                                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse($penilaians as $p)
+                                @forelse($logs as $log)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        {{ $p->periode->nama_periode }}
+                                    {{-- Tanggal --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                        {{ \Carbon\Carbon::parse($log->tanggal)->format('d M Y') }}
                                     </td>
+                                    
+                                    {{-- Nama Karyawan --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ $p->karyawan->nama_lengkap }}</div>
-                                        <div class="text-xs text-gray-500">{{ $p->karyawan->nik }}</div>
+                                        <div class="font-bold text-gray-800 dark:text-gray-200">
+                                            {{ $log->header->karyawan->nama_lengkap ?? '-' }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ $log->header->karyawan->nik ?? '' }}
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        {{ \Carbon\Carbon::parse($p->tanggal_penilaian)->translatedFormat('d M Y') }}
+
+                                    {{-- Indikator --}}
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                            {{ $log->indikator->nama_indikator ?? '-' }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            Target: {{ number_format($log->indikator->target->nilai_target ?? 0, 0, ',', '.') }} 
+                                            {{ $log->indikator->target->jenis_target ?? '' }}
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $p->penilai->name ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        {{-- Logika Warna Skor --}}
-                                        @php
-                                            $skor = $p->total_nilai;
-                                            $badgeClass = 'bg-red-100 text-red-800 border-red-200'; // Default Merah (Buruk)
-                                            if($skor >= 85) {
-                                                $badgeClass = 'bg-green-100 text-green-800 border-green-200'; // Bagus Sekali
-                                            } elseif($skor >= 70) {
-                                                $badgeClass = 'bg-blue-100 text-blue-800 border-blue-200'; // Baik
-                                            } elseif($skor >= 50) {
-                                                $badgeClass = 'bg-yellow-100 text-yellow-800 border-yellow-200'; // Cukup
-                                            }
-                                        @endphp
-                                        <span class="px-3 py-1 rounded-full text-sm font-bold border {{ $badgeClass }}">
-                                            {{ $skor }}
+
+                                    {{-- Nilai Realisasi --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full bg-green-100 text-green-800 border border-green-200">
+                                            {{ number_format($log->nilai_input, 0, ',', '.') }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                        {{-- Tombol Edit --}}
-                                        <a href="{{ route('penilaian.edit', $p->id_penilaianHeader) }}" class="text-indigo-600 hover:text-indigo-900 font-bold bg-indigo-50 px-3 py-1 rounded-md">
-                                            Edit Nilai
-                                        </a>
+
+                                    {{-- Catatan --}}
+                                    <td class="px-6 py-4 text-sm text-gray-500 italic">
+                                        {{ $log->catatan ?? '-' }}
+                                    </td>
+
+                                    {{-- Aksi (Hapus Log Salah Input) --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <div class="flex justify-center items-center space-x-3">
+                                            
+                                            {{-- TOMBOL EDIT --}}
+                                            <a href="{{ route('penilaian.edit', $log->getKey()) }}" 
+                                            class="text-blue-500 hover:text-blue-700 font-bold text-xs uppercase tracking-wide">
+                                                Edit
+                                            </a>
+
+                                            <span class="text-gray-300">|</span>
+
+                                            {{-- TOMBOL HAPUS --}}
+                                            <form action="{{ route('penilaian.destroy', $log->getKey()) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus log aktivitas ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-wide">
+                                                    Hapus
+                                                </button>
+                                            </form>
+
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
                                     <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                                        Belum ada data penilaian. Klik tombol "Input Penilaian Baru" untuk memulai.
+                                        <div class="flex flex-col items-center">
+                                            <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                            <p>Belum ada aktivitas yang diinput pada periode ini.</p>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                        
+                        {{-- Pagination --}}
+                        <div class="mt-4">
+                            {{ $logs->links() }}
+                        </div>
                     </div>
 
                 </div>

@@ -23,7 +23,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Indikator</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nilai Target</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jenis</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Satuan</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
                             </tr>
@@ -32,12 +32,26 @@
                             @foreach($targets as $index => $target)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
-                                <td class="px-6 py-4 font-semibold">{{ $target->indikator->nama_indikator ?? '-' }}</td>
-                                <td class="px-6 py-4 font-bold text-green-600">{{ $target->nilai_target }}</td>
-                                <td class="px-6 py-4">{{ $target->jenis_target ?? '-' }}</td>
-                                <td class="px-6 py-4">{{ $target->status }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="font-bold">{{ $target->indikator->nama_indikator ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">{{ $target->indikator->kategori->nama_kategori ?? '' }}</div>
+                                </td>
+                                <td class="px-6 py-4 font-bold text-green-600">
+                                    {{-- Format Angka (Contoh: 5.000.000) --}}
+                                    {{ number_format($target->nilai_target, 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded border border-gray-500">
+                                        {{ $target->jenis_target ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $target->status == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        {{ $target->status }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-3">
-                                    <a href="{{ route('target.edit', $target->id_target) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                    <a href="{{ route('target.edit', $target->id_target) }}" class="text-indigo-600 hover:text-indigo-900 font-bold">Edit</a>
                                     <form action="{{ route('target.destroy', $target->id_target) }}" method="POST" onsubmit="return confirm('Hapus target ini?');">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('target_kpis', function (Blueprint $table) {
             $table->id('id_target');
             $table->foreignId('id_indikator')->constrained('indikator_kpis', 'id_indikator')->onDelete('cascade');
-            $table->string('nilai_target');
+            $table->decimal('nilai_target', 15, 2);
             $table->string('jenis_target')->nullable();
             $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->timestamps();

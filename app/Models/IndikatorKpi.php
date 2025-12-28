@@ -28,6 +28,10 @@ class IndikatorKpi extends Model
     {
         return $this->hasMany(BobotKpi::class, 'id_indikator', 'id_indikator');
     }
+    public function target()
+    {
+        return $this->hasOne(TargetKpi::class, 'id_indikator', 'id_indikator');
+    }
     protected $casts = [
         'target_divisi' => 'array',
     ];

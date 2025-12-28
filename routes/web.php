@@ -11,6 +11,7 @@ use App\Http\Controllers\BobotKpiController;
 use App\Http\Controllers\TargetKpiController;
 use App\Http\Controllers\PeriodeEvaluasiController;
 use App\Http\Controllers\PenilaianController;
+use App\Http\Controllers\LaporanHrdController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,6 +42,10 @@ Route::middleware(['auth', 'role:HRD'])->group(function () {
     Route::resource('target', TargetKpiController::class);
     Route::resource('periode', PeriodeEvaluasiController::class);
     Route::resource('penilaian', PenilaianController::class);
+    
+    // Laporan Nilai
+    Route::get('/laporan', [LaporanHrdController::class, 'index'])->name('admin.monitoring.index');
+Route::get('/laporan/{karyawan}/{periode}', [LaporanHrdController::class, 'show'])->name('admin.monitoring.show');
 });
 
 
