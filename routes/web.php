@@ -24,7 +24,7 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // =================================================================
@@ -45,7 +45,9 @@ Route::middleware(['auth', 'role:HRD'])->group(function () {
     
     // Laporan Nilai
     Route::get('/laporan', [LaporanHrdController::class, 'index'])->name('admin.monitoring.index');
-Route::get('/laporan/{karyawan}/{periode}', [LaporanHrdController::class, 'show'])->name('admin.monitoring.show');
+    Route::get('/laporan/{karyawan}/{periode}', [LaporanHrdController::class, 'show'])->name('admin.monitoring.show');
+
+    Route::get('/ranking-kpi', [LaporanHrdController::class, 'ranking'])->name('admin.ranking.index');
 });
 
 
@@ -56,6 +58,16 @@ Route::middleware(['auth', 'role:Manajer'])->group(function () {
     
     Route::resource('penilaian', PenilaianController::class);
 
+    // Rapor Tim (Manajer)
+    Route::get('/laporan-kpi', [PenilaianController::class, 'laporan'])->name('penilaian.laporan');
+    Route::get('/laporan-kpi/{id_karyawan}', [PenilaianController::class, 'detailLaporan'])->name('penilaian.detailLaporan');
+});
+
+// =================================================================
+// 3. GRUP KHUSUS KARYAWAN (RAPOR PRIBADI)
+// =================================================================
+Route::middleware(['auth', 'role:Karyawan'])->group(function () {
+    Route::get('/rapor-saya', [App\Http\Controllers\KaryawanPanelController::class, 'index'])->name('karyawan.rapor');
 });
 
 require __DIR__.'/auth.php';

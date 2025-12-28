@@ -8,12 +8,16 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            <a href="{{ route('admin.monitoring.index') }}" class="text-gray-600 hover:text-gray-900 font-bold">
-                &larr; Kembali ke Dashboard Monitoring
-            </a>
+            {{-- Tombol Kembali --}}
+            <div class="mb-4 no-print"> {{-- Tambahkan class no-print disini --}}
+                <a href="{{ route('admin.monitoring.index') }}" class="text-gray-600 hover:text-gray-900 font-bold">
+                    &larr; Kembali ke Dashboard Monitoring
+                </a>
+            </div>
 
             {{-- HEADER INFO --}}
             <div class="bg-white shadow sm:rounded-lg mb-6 p-6 flex justify-between items-center">
+                {{-- ... (Isi Header Info Tetap Sama) ... --}}
                 <div>
                     <h1 class="text-2xl font-bold">{{ $karyawan->nama_lengkap }}</h1>
                     <p class="text-gray-500">{{ $karyawan->divisi->nama_divisi }} | Periode: {{ $periode->nama_periode }}</p>
@@ -28,6 +32,7 @@
             <div class="bg-white shadow sm:rounded-lg overflow-hidden">
                 <div class="p-6">
                     <table class="min-w-full divide-y divide-gray-200 border">
+                        {{-- ... (Isi Tabel Tetap Sama) ... --}}
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-bold uppercase">Indikator</th>
@@ -66,6 +71,37 @@
                     </table>
                 </div>
             </div>
+
+            {{-- 🟢 MULAI KODINGAN BARU DISINI (SETELAH DIV TABEL DITUTUP) 🟢 --}}
+            
+            <div class="mt-6 flex justify-end no-print">
+                <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded shadow-lg flex items-center gap-2 transform hover:scale-105 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Unduh / Cetak Lapor
+                </button>
+            </div>
+
+            <style>
+                @media print {
+                    /* Sembunyikan tombol, header, sidebar, dan navigasi saat nge-print */
+                    .no-print, header, aside, nav { display: none !important; }
+                    
+                    /* Reset warna background dan text */
+                    body { background-color: white; color: black; }
+                    .bg-white { background-color: white !important; }
+                    
+                    /* Hilangkan bayangan box */
+                    .shadow, .shadow-sm, .shadow-lg { box-shadow: none !important; }
+                    
+                    /* Pastikan layout full width */
+                    .max-w-7xl { max-width: 100% !important; margin: 0; padding: 0; }
+                    
+                    /* Pastikan tabel tercetak rapi */
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #000 !important; padding: 8px; }
+                }
+            </style>
+            {{-- 🔴 SELESAI KODINGAN BARU 🔴 --}}
 
         </div>
     </div>

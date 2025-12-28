@@ -217,4 +217,128 @@ class PenilaianController extends Controller
             return redirect()->back()->with('error', 'Gagal menghapus data.');
         }
     }
+
+    /**
+     * Halaman Rapor Kinerja Tim (Khusus Manajer)
+     */
+    public function laporan(Request $request)
+    {
+        // 1. Ambil Data Manajer yang Login
+        $user = Auth::user();
+        $manajer = Karyawan::with('divisi')->where('id_user', $user->id_user)->first();
+
+        if (!$manajer) {
+            return redirect()->route('dashboard')->with('error', 'Profil Manajer belum lhou!');
+        }
+
+        // 2. Filter Periode
+        $periodes = PeriodeEvaluasi::all();
+        $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
+
+        // 3. Ambil Karyawan (HANYA Satu Divisi dengan Manajer)
+        $karyawans = Karyawan::where('id_divisi', $manajer->id_divisi)
+                             ->where('status_karyawan', 'Aktif')
+                             ->where('id_karyawan', '!=', $manajer->id_karyawan) // Opsional: Manajer tidak menilai diri sendiri disini
+                             ->get();
+
+        // 4. Hitung Skor Ringkas
+        foreach ($karyawans as $k) {
+            if ($selectedPeriode) {
+                // Panggil fungsi hitung (sama seperti di HRD)
+                $k->skor_saat_ini = $this->hitungSkorPrivate($k->id_karyawan, $selectedPeriode, $manajer->id_divisi);
+            } else {
+                $k->skor_saat_ini = 0;
+            }
+        }
+
+        return view('manajer.penilaian.laporan', compact('karyawans', 'periodes', 'selectedPeriode', 'manajer'));
+    }
+
+    /**
+     * Detail Rapor Anggota Tim
+     */
+    public function detailLaporan($id_karyawan)
+    {
+        $karyawan = Karyawan::findOrFail($id_karyawan);
+        
+        // Validasi: Pastikan Karyawan ini satu divisi dengan Manajer yang login (Security Check)
+        $user = Auth::user();
+        $manajer = Karyawan::where('id_user', $user->id_user)->first();
+        if($manajer->id_divisi != $karyawan->id_divisi){
+            abort(403, 'Anda tidak berhak melihat rapor divisi lain.');
+        }
+
+        $periode = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        // Jika mau lihat history, bisa dimodifikasi ambil dari request param
+        
+        if(!$periode) {
+            return redirect()->back()->with('error', 'Tidak ada periode aktif.');
+        }
+
+        $dataRapor = $this->getDetailSkorPrivate($id_karyawan, $periode->id_periode, $karyawan->id_divisi);
+
+        return view('manajer.penilaian.detail', compact('karyawan', 'periode', 'dataRapor'));
+    }
+
+    // --- HELPER FUNCTION (Copy logic kalkulasi agar mandiri) ---
+    private function hitungSkorPrivate($idKaryawan, $idPeriode, $idDivisi)
+    {
+        $data = $this->getDetailSkorPrivate($idKaryawan, $idPeriode, $idDivisi);
+        return $data['total_skor_akhir'];
+    }
+
+    private function getDetailSkorPrivate($idKaryawan, $idPeriode, $idDivisiStr)
+    {
+        // 1. Ambil Header Penilaian
+        $header = PenilaianHeader::where('id_karyawan', $idKaryawan)
+                                 ->where('id_periode', $idPeriode)
+                                 ->first();
+
+        // 2. Ambil Semua Indikator Aktif
+        $allIndikators = KategoriKpi::with(['indikators' => function($q) {
+            $q->where('status', 'Aktif')->with(['target', 'bobot']);
+        }])->where('status', 'Aktif')->get();
+
+        $totalSkorAkhir = 0;
+        $detail = [];
+
+        foreach ($allIndikators as $kategori) {
+            foreach ($kategori->indikators as $indikator) {
+                // Filter Divisi (Penting!)
+                $targetsDivisi = $indikator->target_divisi ?? [];
+                if (!in_array((string)$idDivisiStr, $targetsDivisi)) continue;
+
+                $nilaiTarget = $indikator->target->nilai_target ?? 0;
+                $nilaiBobot = $indikator->bobot->first()->nilai_bobot ?? 0;
+
+                // Hitung Realisasi
+                $totalRealisasi = 0;
+                if ($header) {
+                    $totalRealisasi = PenilaianDetail::where('id_penilaianHeader', $header->id_penilaianHeader)
+                                                     ->where('id_indikator', $indikator->id_indikator)
+                                                     ->sum('nilai_input');
+                }
+
+                // Hitung Capaian
+                $pencapaian = ($nilaiTarget > 0) ? ($totalRealisasi / $nilaiTarget) * 100 : 0;
+                $skorKontribusi = ($pencapaian * $nilaiBobot) / 100;
+
+                $totalSkorAkhir += $skorKontribusi;
+                
+                $detail[] = [
+                    'kategori' => $kategori->nama_kategori,
+                    'indikator' => $indikator->nama_indikator,
+                    'satuan' => $indikator->target->jenis_target ?? '-',
+                    'target' => $nilaiTarget,
+                    'realisasi' => $totalRealisasi,
+                    'pencapaian' => $pencapaian,
+                    'bobot' => $nilaiBobot,
+                    'skor' => $skorKontribusi
+                ];
+            }
+        }
+
+        return ['total_skor_akhir' => $totalSkorAkhir, 'detail' => $detail];
+    }
 }

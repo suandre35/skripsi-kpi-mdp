@@ -123,4 +123,35 @@ class LaporanHrdController extends Controller
 
         return ['total_skor_akhir' => $totalSkorAkhir, 'detail' => $detail];
     }
+
+    /**
+     * Laporan Perbandingan Kinerja (Ranking)
+     */
+    public function ranking(Request $request)
+    {
+        // 1. Ambil Periode (Default: Aktif)
+        $periodes = PeriodeEvaluasi::all();
+        $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
+
+        // 2. Ambil Semua Karyawan
+        $karyawans = Karyawan::with('divisi')->where('status_karyawan', 'Aktif')->get();
+
+        // 3. Hitung Skor & Masukkan ke Collection
+        $ranking = $karyawans->map(function($karyawan) use ($selectedPeriode) {
+            $skor = $selectedPeriode ? $this->hitungSkor($karyawan->id_karyawan, $selectedPeriode, $karyawan->id_divisi) : 0;
+            return [
+                'nama' => $karyawan->nama_lengkap,
+                'divisi' => $karyawan->divisi->nama_divisi,
+                'skor' => $skor,
+                // Tentukan Grade
+                'grade' => $skor >= 90 ? 'A' : ($skor >= 80 ? 'B' : ($skor >= 70 ? 'C' : ($skor >= 60 ? 'D' : 'E')))
+            ];
+        });
+
+        // 4. Urutkan dari Skor Tertinggi (Desc)
+        $ranking = $ranking->sortByDesc('skor')->values();
+
+        return view('admin.laporan.ranking', compact('ranking', 'periodes', 'selectedPeriode'));
+    }
 }

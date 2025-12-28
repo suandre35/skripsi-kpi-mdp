@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Monitoring Aktivitas Harian (Log)') }}
+            {{ __('Input Penilaian') }}
         </h2>
     </x-slot>
 
@@ -21,7 +21,7 @@
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-bold">Riwayat Input Aktivitas Tim</h3>
                         <a href="{{ route('penilaian.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
-                            + Input Log Hari Ini
+                            + Input Penilaian Hari Ini
                         </a>
                     </div>
 
