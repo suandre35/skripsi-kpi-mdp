@@ -10,9 +10,25 @@ class KategoriKpiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $kategoris = KategoriKpi::all();
+        // 1. Query Dasar
+        $query = KategoriKpi::query();
+
+        // 2. Filter Search (Nama Kategori)
+        if ($request->filled('search')) {
+            $query->where('nama_kategori', 'LIKE', "%{$request->search}%");
+        }
+
+        // 3. Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 4. Pagination
+        $kategoris = $query->orderBy('nama_kategori', 'asc')
+                        ->paginate(10)
+                        ->withQueryString();
 
         return view('admin.kategori.index', compact('kategoris'));
     }

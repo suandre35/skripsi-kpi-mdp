@@ -1,127 +1,171 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Input Penilaian') }}
-        </h2>
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <h2 class="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
+                {{ __('Input Penilaian') }}
+            </h2>
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400">
+                        <a href="{{ route('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                            </svg>
+                            <span class="ml-1 text-sm font-medium text-gray-800 dark:text-gray-100">Log Aktivitas</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
-            {{-- Notifikasi Sukses --}}
+            {{-- ALERT MESSAGES --}}
             @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-                    {{ session('success') }}
+                <div class="flex items-center p-4 mb-4 text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 border border-green-200 dark:border-green-800" role="alert">
+                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                    </svg>
+                    <div class="ml-3 text-sm font-medium">{{ session('success') }}</div>
                 </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-bold">Riwayat Input Aktivitas Tim</h3>
-                        <a href="{{ route('penilaian.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
-                            + Input Penilaian Hari Ini
-                        </a>
+            {{-- MAIN CARD --}}
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700">
+                
+                {{-- TOOLBAR --}}
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Riwayat Input Aktivitas Tim</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Monitoring kinerja harian anggota tim.</p>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Karyawan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Aktivitas (Indikator)</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Realisasi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Catatan</th>
-                                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse($logs as $log)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                    {{-- Tanggal --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                                        {{ \Carbon\Carbon::parse($log->tanggal)->format('d M Y') }}
-                                    </td>
-                                    
-                                    {{-- Nama Karyawan --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="font-bold text-gray-800 dark:text-gray-200">
-                                            {{ $log->header->karyawan->nama_lengkap ?? '-' }}
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            {{ $log->header->karyawan->nik ?? '' }}
-                                        </div>
-                                    </td>
+                    {{-- Tombol Tambah --}}
+                    <a href="{{ route('penilaian.create') }}" class="flex items-center justify-center gap-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 transition transform hover:-translate-y-0.5 shadow-lg shadow-blue-500/30">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Input Penilaian Hari Ini
+                    </a>
+                </div>
 
-                                    {{-- Indikator --}}
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                            {{ $log->indikator->nama_indikator ?? '-' }}
+                {{-- TABLE --}}
+                <div class="relative overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 rounded-tl-lg">Karyawan & Tanggal</th>
+                                <th scope="col" class="px-6 py-4">Aktivitas (Indikator)</th>
+                                <th scope="col" class="px-6 py-4">Realisasi</th>
+                                <th scope="col" class="px-6 py-4">Catatan</th>
+                                <th scope="col" class="px-6 py-4 text-center rounded-tr-lg">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @forelse($logs as $log)
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition duration-150">
+                                
+                                {{-- KOLOM 1: KARYAWAN & TANGGAL --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-start gap-3">
+                                        {{-- Avatar Inisial --}}
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">
+                                            {{ substr($log->header->karyawan->nama_lengkap ?? 'X', 0, 1) }}
                                         </div>
-                                        <div class="text-xs text-gray-500">
-                                            Target: {{ number_format($log->indikator->target->nilai_target ?? 0, 0, ',', '.') }} 
-                                            {{ $log->indikator->target->jenis_target ?? '' }}
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-900 dark:text-white">
+                                                {{ $log->header->karyawan->nama_lengkap ?? 'Karyawan Dihapus' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                                NIK: {{ $log->header->karyawan->nik ?? '-' }}
+                                            </div>
+                                            {{-- Badge Tanggal --}}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                {{ \Carbon\Carbon::parse($log->tanggal)->format('d M Y') }}
+                                            </span>
                                         </div>
-                                    </td>
+                                    </div>
+                                </td>
 
-                                    {{-- Nilai Realisasi --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full bg-green-100 text-green-800 border border-green-200">
+                                {{-- KOLOM 2: INDIKATOR --}}
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-bold text-gray-900 dark:text-white mb-1">
+                                        {{ $log->indikator->nama_indikator ?? '-' }}
+                                    </div>
+                                    <div class="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded border border-blue-100 dark:border-blue-800">
+                                        <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                        Target: {{ number_format($log->indikator->target->nilai_target ?? 0, 0, ',', '.') }} 
+                                        {{ $log->indikator->target->jenis_target ?? '' }}
+                                    </div>
+                                </td>
+
+                                {{-- KOLOM 3: REALISASI --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex flex-col">
+                                        <span class="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                                             {{ number_format($log->nilai_input, 0, ',', '.') }}
                                         </span>
-                                    </td>
+                                        <span class="text-xs text-gray-400">Hasil Capaian</span>
+                                    </div>
+                                </td>
 
-                                    {{-- Catatan --}}
-                                    <td class="px-6 py-4 text-sm text-gray-500 italic">
-                                        {{ $log->catatan ?? '-' }}
-                                    </td>
-
-                                    {{-- Aksi (Hapus Log Salah Input) --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <div class="flex justify-center items-center space-x-3">
-                                            
-                                            {{-- TOMBOL EDIT --}}
-                                            <a href="{{ route('penilaian.edit', $log->getKey()) }}" 
-                                            class="text-blue-500 hover:text-blue-700 font-bold text-xs uppercase tracking-wide">
-                                                Edit
-                                            </a>
-
-                                            <span class="text-gray-300">|</span>
-
-                                            {{-- TOMBOL HAPUS --}}
-                                            <form action="{{ route('penilaian.destroy', $log->getKey()) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus log aktivitas ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-wide">
-                                                    Hapus
-                                                </button>
-                                            </form>
-
+                                {{-- KOLOM 4: CATATAN --}}
+                                <td class="px-6 py-4">
+                                    @if($log->catatan)
+                                        <div class="flex items-start gap-1">
+                                            <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                                            <span class="text-sm text-gray-600 dark:text-gray-300 italic line-clamp-2" title="{{ $log->catatan }}">
+                                                "{{ $log->catatan }}"
+                                            </span>
                                         </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                                        <div class="flex flex-col items-center">
-                                            <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                                            <p>Belum ada aktivitas yang diinput pada periode ini.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                        
-                        {{-- Pagination --}}
-                        <div class="mt-4">
-                            {{ $logs->links() }}
-                        </div>
-                    </div>
+                                    @else
+                                        <span class="text-xs text-gray-400">-</span>
+                                    @endif
+                                </td>
 
+                                {{-- KOLOM 5: AKSI --}}
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ route('penilaian.edit', $log->getKey()) }}" class="p-2 text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-lg transition-colors duration-200" title="Edit Data">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </a>
+
+                                        <form action="{{ route('penilaian.destroy', $log->getKey()) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus log aktivitas ini?');">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-colors duration-200" title="Hapus Log">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                        <p class="text-lg font-medium">Belum ada aktivitas yang diinput.</p>
+                                        <p class="text-sm text-gray-400 mb-4">Mulai input penilaian kinerja harian tim Anda.</p>
+                                        <a href="{{ route('penilaian.create') }}" class="text-blue-600 hover:underline text-sm font-semibold">
+                                            + Input Sekarang
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
+
+                {{-- PAGINATION --}}
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+                    {{ $logs->links() }}
+                </div>
+
             </div>
         </div>
     </div>

@@ -11,9 +11,26 @@ class DivisiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $divisis = Divisi::with('manajer')->get();
+        // 1. Mulai Query dengan Eager Loading (biar ringan)
+        $query = Divisi::with('manajer'); 
+
+        // 2. Logika Search
+        if ($request->filled('search')) {
+            $query->where('nama_divisi', 'LIKE', "%{$request->search}%");
+        }
+
+        // 3. Logika Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 4. Pagination (10 data per halaman)
+        $divisis = $query->orderBy('nama_divisi', 'asc')
+                        ->paginate(10)
+                        ->withQueryString();
+
         return view('admin.divisi.index', compact('divisis'));
     }
 

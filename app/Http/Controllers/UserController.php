@@ -12,9 +12,34 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('id_user', 'desc')->get();
+        // Mulai Query
+        $query = User::query();
+
+        // 1. Logika Search (Cari Nama atau Email)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // 2. Logika Filter Role
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        // 3. Logika Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 4. Pagination (10 data per halaman) & Simpan parameter URL (withQueryString)
+        // agar saat pindah halaman, filter tidak hilang.
+        $users = $query->orderBy('name', 'asc')->paginate(10)->withQueryString();
+
         return view('admin.user.index', compact('users'));
     }
 

@@ -5,16 +5,49 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\TargetKpi;
 use App\Models\IndikatorKpi;
+use App\Models\KategoriKpi; 
 
 class TargetKpiController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $targets = TargetKpi::with('indikator')->get();
-        return view('admin.target.index', compact('targets'));
+        // 1. Query Dasar dengan Eager Loading
+        // Kita tambah '.kategori' agar bisa ambil nama kategori lewat indikator
+        $query = TargetKpi::with(['indikator.kategori']);
+
+        // 2. Filter Search (Cari berdasarkan Nama Indikator)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('indikator', function($q) use ($search) {
+                $q->where('nama_indikator', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // 3. Filter Kategori (Mencari Target berdasarkan Kategori Indikatornya)
+        if ($request->filled('kategori')) {
+            $kategoriId = $request->kategori;
+            $query->whereHas('indikator', function($q) use ($kategoriId) {
+                $q->where('id_kategori', $kategoriId);
+            });
+        }
+
+        // 4. Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 5. Pagination
+        $targets = $query->orderBy('id_target', 'desc')
+                         ->paginate(10)
+                         ->withQueryString();
+
+        // Data pendukung untuk dropdown filter di View
+        $kategoris = KategoriKpi::orderBy('nama_kategori', 'asc')->get();
+
+        return view('admin.target.index', compact('targets', 'kategoris'));
     }
 
     /**

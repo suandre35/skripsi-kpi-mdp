@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\BobotKpi;
+use App\Models\KategoriKpi;
 use App\Models\IndikatorKpi;
 
 class BobotKpiController extends Controller
@@ -11,10 +12,41 @@ class BobotKpiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $bobots = BobotKpi::with('indikator')->get();
-        return view('admin.bobot.index', compact('bobots'));
+        // 1. Query Dasar dengan Eager Loading (Indikator & Kategorinya)
+        $query = BobotKpi::with(['indikator.kategori']);
+
+        // 2. Filter Search (Nama Indikator)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('indikator', function($q) use ($search) {
+                $q->where('nama_indikator', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // 3. Filter Kategori (PENTING: Melihat bobot berdasarkan kategori)
+        if ($request->filled('kategori')) {
+            $kategoriId = $request->kategori;
+            $query->whereHas('indikator', function($q) use ($kategoriId) {
+                $q->where('id_kategori', $kategoriId);
+            });
+        }
+
+        // 4. Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 5. Pagination
+        $bobots = $query->orderBy('nilai_bobot', 'desc') // Urutkan dari bobot terbesar
+                        ->paginate(10)
+                        ->withQueryString();
+
+        // Data untuk Dropdown Filter
+        $kategoris = KategoriKpi::orderBy('nama_kategori', 'asc')->get();
+
+        return view('admin.bobot.index', compact('bobots', 'kategoris'));
     }
 
     /**

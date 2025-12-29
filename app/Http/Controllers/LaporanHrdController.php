@@ -29,9 +29,20 @@ class LaporanHrdController extends Controller
         // 2. Query Karyawan (Sesuai Filter)
         $query = Karyawan::with('divisi')->where('status_karyawan', 'Aktif');
 
+        // Filter Divisi
         if ($selectedDivisi) {
             $query->where('id_divisi', $selectedDivisi);
         }
+
+        // --- TAMBAHAN: LOGIKA SEARCH ---
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'LIKE', "%{$search}%")
+                  ->orWhere('nik', 'LIKE', "%{$search}%");
+            });
+        }
+        // -------------------------------
 
         // Kecuali Admin/HRD sendiri (opsional)
         // $query->where('role', '!=', 'HRD'); 
@@ -50,9 +61,8 @@ class LaporanHrdController extends Controller
         return view('admin.laporan.index', compact('karyawans', 'divisis', 'periodes', 'selectedPeriode', 'selectedDivisi'));
     }
 
-    /**
-     * Detail Rapor Karyawan (View HRD)
-     */
+    // ... (Sisa method show, hitungSkor, getDetailSkor, ranking TETAP SAMA seperti kode Anda) ...
+    
     public function show($id_karyawan, $id_periode)
     {
         $karyawan = Karyawan::findOrFail($id_karyawan);
@@ -63,7 +73,6 @@ class LaporanHrdController extends Controller
         return view('admin.laporan.show', compact('karyawan', 'periode', 'dataRapor'));
     }
 
-    // --- HELPER FUNCTION (Logic kalkulasi sama dengan Manajer) ---
     private function hitungSkor($idKaryawan, $idPeriode, $idDivisi)
     {
         $data = $this->getDetailSkor($idKaryawan, $idPeriode, $idDivisi);
@@ -72,12 +81,10 @@ class LaporanHrdController extends Controller
 
     private function getDetailSkor($idKaryawan, $idPeriode, $idDivisiStr)
     {
-        // Ambil Header
         $header = PenilaianHeader::where('id_karyawan', $idKaryawan)
                                  ->where('id_periode', $idPeriode)
                                  ->first();
 
-        // Ambil Indikator Global
         $allIndikators = KategoriKpi::with(['indikators' => function($q) {
             $q->where('status', 'Aktif')->with(['target', 'bobot']);
         }])->where('status', 'Aktif')->get();
@@ -87,14 +94,12 @@ class LaporanHrdController extends Controller
 
         foreach ($allIndikators as $kategori) {
             foreach ($kategori->indikators as $indikator) {
-                // Filter Divisi
                 $targetsDivisi = $indikator->target_divisi ?? [];
                 if (!in_array((string)$idDivisiStr, $targetsDivisi)) continue;
 
                 $nilaiTarget = $indikator->target->nilai_target ?? 0;
                 $nilaiBobot = $indikator->bobot->first()->nilai_bobot ?? 0;
 
-                // Hitung Realisasi
                 $totalRealisasi = 0;
                 if ($header) {
                     $totalRealisasi = PenilaianDetail::where('id_penilaianHeader', $header->id_penilaianHeader)
@@ -102,7 +107,6 @@ class LaporanHrdController extends Controller
                                                      ->sum('nilai_input');
                 }
 
-                // Hitung Capaian
                 $pencapaian = ($nilaiTarget > 0) ? ($totalRealisasi / $nilaiTarget) * 100 : 0;
                 $skorKontribusi = ($pencapaian * $nilaiBobot) / 100;
 
@@ -124,22 +128,32 @@ class LaporanHrdController extends Controller
         return ['total_skor_akhir' => $totalSkorAkhir, 'detail' => $detail];
     }
 
-    /**
-     * Laporan Perbandingan Kinerja (Ranking)
-     */
     public function ranking(Request $request)
     {
-        // 1. Ambil Periode (Default: Aktif)
+        // 1. Ambil Data Filter (Periode & Divisi)
         $periodes = PeriodeEvaluasi::all();
+        $divisis = Divisi::where('status', 'Aktif')->get(); // TAMBAHAN: Ambil data divisi
+
+        // 2. Set Default Value
         $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
         $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
+        $selectedDivisi = $request->id_divisi ?? null; // TAMBAHAN: Tangkap input divisi
 
-        // 2. Ambil Semua Karyawan
-        $karyawans = Karyawan::with('divisi')->where('status_karyawan', 'Aktif')->get();
+        // 3. Query Karyawan
+        $query = Karyawan::with('divisi')->where('status_karyawan', 'Aktif');
 
-        // 3. Hitung Skor & Masukkan ke Collection
+        // TAMBAHAN: Filter berdasarkan Divisi jika ada input
+        if ($selectedDivisi) {
+            $query->where('id_divisi', $selectedDivisi);
+        }
+
+        $karyawans = $query->get();
+
+        // 4. Hitung Skor & Masukkan ke Collection
         $ranking = $karyawans->map(function($karyawan) use ($selectedPeriode) {
+            // Hitung skor hanya jika ada periode yang dipilih
             $skor = $selectedPeriode ? $this->hitungSkor($karyawan->id_karyawan, $selectedPeriode, $karyawan->id_divisi) : 0;
+            
             return [
                 'nama' => $karyawan->nama_lengkap,
                 'divisi' => $karyawan->divisi->nama_divisi,
@@ -149,9 +163,10 @@ class LaporanHrdController extends Controller
             ];
         });
 
-        // 4. Urutkan dari Skor Tertinggi (Desc)
+        // 5. Urutkan dari Skor Tertinggi (Desc)
         $ranking = $ranking->sortByDesc('skor')->values();
 
-        return view('admin.laporan.ranking', compact('ranking', 'periodes', 'selectedPeriode'));
+        // Kirim $divisis dan $selectedDivisi ke View
+        return view('admin.laporan.ranking', compact('ranking', 'periodes', 'divisis', 'selectedPeriode', 'selectedDivisi'));
     }
 }

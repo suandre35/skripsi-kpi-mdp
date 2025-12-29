@@ -12,12 +12,39 @@ class IndikatorKpiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $indikators = IndikatorKpi::with('kategori')->get();
-        $allDivisi = Divisi::all()->pluck('nama_divisi', 'id_divisi');
+        // 1. Query Dasar dengan Eager Loading
+        $query = IndikatorKpi::with('kategori');
 
-        return view('admin.indikator.index', compact('indikators', 'allDivisi'));
+        // 2. Filter Search (Nama Indikator)
+        if ($request->filled('search')) {
+            $query->where('nama_indikator', 'LIKE', "%{$request->search}%");
+        }
+
+        // 3. Filter Kategori (Dropdown)
+        if ($request->filled('kategori')) {
+            $query->where('id_kategori', $request->kategori);
+        }
+
+        // 4. Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 5. Pagination
+        $indikators = $query->orderBy('nama_indikator', 'asc')
+                            ->paginate(10)
+                            ->withQueryString();
+
+        // 6. Data Pendukung untuk View
+        // Mapping ID Divisi ke Nama: [1 => 'IT', 2 => 'HRD'] agar query ringan di view
+        $allDivisi = Divisi::pluck('nama_divisi', 'id_divisi')->toArray();
+        
+        // List Kategori untuk Dropdown Filter
+        $kategoris = KategoriKpi::where('status', 'Aktif')->get();
+
+        return view('admin.indikator.index', compact('indikators', 'allDivisi', 'kategoris'));
     }
 
     /**

@@ -12,10 +12,39 @@ class KaryawanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $karyawans = Karyawan::with(['user', 'divisi'])->get();
-        return view('admin.karyawan.index', compact('karyawans'));
+        // 1. Query dengan Eager Loading (User & Divisi)
+        $query = Karyawan::with(['user', 'divisi']);
+
+        // 2. Filter Search (NIK atau Nama)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'LIKE', "%{$search}%")
+                ->orWhere('nik', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // 3. Filter Divisi
+        if ($request->filled('divisi')) {
+            $query->where('id_divisi', $request->divisi);
+        }
+
+        // 4. Filter Status
+        if ($request->filled('status')) {
+            $query->where('status_karyawan', $request->status);
+        }
+
+        // 5. Pagination
+        $karyawans = $query->orderBy('nama_lengkap', 'asc')
+                        ->paginate(10)
+                        ->withQueryString();
+
+        // 6. Ambil data divisi untuk dropdown filter
+        $divisis = Divisi::all();
+
+        return view('admin.karyawan.index', compact('karyawans', 'divisis'));
     }
 
     /**

@@ -12,8 +12,11 @@ class PeriodeEvaluasiController extends Controller
      */
     public function index()
     {
-        $periodes = PeriodeEvaluasi::orderBy('tanggal_mulai', 'desc')->get();
-        return view('admin.periode.index', compact('periodes'));
+        $periodes = PeriodeEvaluasi::orderBy('created_at', 'desc')->paginate(10);
+
+        $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
+
+        return view('admin.periode.index', compact('periodes', 'periodeAktif'));
     }
 
     /**

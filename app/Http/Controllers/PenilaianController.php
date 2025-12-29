@@ -228,7 +228,7 @@ class PenilaianController extends Controller
         $manajer = Karyawan::with('divisi')->where('id_user', $user->id_user)->first();
 
         if (!$manajer) {
-            return redirect()->route('dashboard')->with('error', 'Profil Manajer belum lhou!');
+            return redirect()->route('dashboard')->with('error', 'Profil Manajer belum ditemukan!');
         }
 
         // 2. Filter Periode
@@ -236,16 +236,26 @@ class PenilaianController extends Controller
         $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
         $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
 
-        // 3. Ambil Karyawan (HANYA Satu Divisi dengan Manajer)
-        $karyawans = Karyawan::where('id_divisi', $manajer->id_divisi)
-                             ->where('status_karyawan', 'Aktif')
-                             ->where('id_karyawan', '!=', $manajer->id_karyawan) // Opsional: Manajer tidak menilai diri sendiri disini
-                             ->get();
+        // 3. Query Dasar Karyawan (Satu Divisi)
+        $query = Karyawan::where('id_divisi', $manajer->id_divisi)
+                         ->where('status_karyawan', 'Aktif')
+                         ->where('id_karyawan', '!=', $manajer->id_karyawan); // Manajer tidak menilai diri sendiri di sini
+
+        // --- TAMBAHAN LOGIKA SEARCH ---
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'LIKE', "%{$search}%")
+                  ->orWhere('nik', 'LIKE', "%{$search}%");
+            });
+        }
+        // ------------------------------
+
+        $karyawans = $query->get();
 
         // 4. Hitung Skor Ringkas
         foreach ($karyawans as $k) {
             if ($selectedPeriode) {
-                // Panggil fungsi hitung (sama seperti di HRD)
                 $k->skor_saat_ini = $this->hitungSkorPrivate($k->id_karyawan, $selectedPeriode, $manajer->id_divisi);
             } else {
                 $k->skor_saat_ini = 0;
