@@ -15,8 +15,6 @@ class PenilaianHeader extends Model
         'id_karyawan',
         'id_periode',
         'id_penilai',
-        'tanggal_penilaian',
-        'total_nilai',
     ];
 
     public function karyawan()

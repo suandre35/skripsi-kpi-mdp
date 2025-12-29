@@ -45,8 +45,8 @@
                         {{-- KIRI: Search & Filter Group --}}
                         <form method="GET" action="{{ route('target.index') }}" class="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
                             
-                            {{-- 1. Search Bar --}}
-                            <div class="relative w-full md:w-64">
+                            {{-- 1. Search Bar (LEBAR DISAMAKAN: md:w-48) --}}
+                            <div class="relative w-full md:w-48">
                                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
@@ -54,10 +54,22 @@
                                 </div>
                                 <input type="text" name="search" value="{{ request('search') }}" 
                                     class="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
-                                    placeholder="Cari nama indikator..." onkeydown="if (event.key === 'Enter') this.form.submit()">
+                                    placeholder="Cari indikator..." onkeydown="if (event.key === 'Enter') this.form.submit()">
                             </div>
 
-                            {{-- 2. Filter Kategori (MENGGUNAKAN $kategoris DARI CONTROLLER) --}}
+                            {{-- 2. Filter Divisi (md:w-48) --}}
+                            <div class="relative">
+                                <select name="divisi" onchange="this.form.submit()" class="block w-full md:w-48 pl-3 pr-10 py-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white cursor-pointer">
+                                    <option value="">Semua Divisi</option>
+                                    @foreach($divisis as $divisi)
+                                        <option value="{{ $divisi->id_divisi }}" {{ request('divisi') == $divisi->id_divisi ? 'selected' : '' }}>
+                                            {{ $divisi->nama_divisi }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- 3. Filter Kategori (md:w-48) --}}
                             <div class="relative">
                                 <select name="kategori" onchange="this.form.submit()" class="block w-full md:w-48 pl-3 pr-10 py-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white cursor-pointer">
                                     <option value="">Semua Kategori</option>
@@ -69,9 +81,9 @@
                                 </select>
                             </div>
 
-                            {{-- 3. Filter Status --}}
+                            {{-- 4. Filter Status (LEBAR DISAMAKAN: md:w-48) --}}
                             <div class="relative">
-                                <select name="status" onchange="this.form.submit()" class="block w-full md:w-40 pl-3 pr-10 py-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white cursor-pointer">
+                                <select name="status" onchange="this.form.submit()" class="block w-full md:w-48 pl-3 pr-10 py-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white cursor-pointer">
                                     <option value="">Semua Status</option>
                                     <option value="Aktif" {{ request('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
                                     <option value="Nonaktif" {{ request('status') == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
@@ -79,7 +91,7 @@
                             </div>
 
                             {{-- Tombol Reset --}}
-                            @if(request('search') || request('kategori') || request('status'))
+                            @if(request('search') || request('kategori') || request('status') || request('divisi'))
                             <a href="{{ route('target.index') }}" class="flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700">
                                 Reset
                             </a>

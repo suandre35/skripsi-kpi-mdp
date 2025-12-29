@@ -16,8 +16,6 @@ return new class extends Migration
             $table->foreignId('id_karyawan')->constrained('karyawans', 'id_karyawan')->onDelete('cascade');
             $table->foreignId('id_periode')->constrained('periode_evaluasis', 'id_periode')->onDelete('cascade');
             $table->foreignId('id_penilai')->constrained('users', 'id_user');
-            $table->date('tanggal_penilaian');
-            $table->decimal('total_nilai', 5, 2)->default(0);
             $table->timestamps();
         });
     }

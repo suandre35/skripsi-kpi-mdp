@@ -6,15 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\BobotKpi;
 use App\Models\KategoriKpi;
 use App\Models\IndikatorKpi;
+use App\Models\Divisi; // 1. IMPORT DIVISI
 
 class BobotKpiController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
-        // 1. Query Dasar dengan Eager Loading (Indikator & Kategorinya)
+        // 1. Query Dasar dengan Eager Loading
         $query = BobotKpi::with(['indikator.kategori']);
 
         // 2. Filter Search (Nama Indikator)
@@ -25,7 +23,16 @@ class BobotKpiController extends Controller
             });
         }
 
-        // 3. Filter Kategori (PENTING: Melihat bobot berdasarkan kategori)
+        // 3. Filter Divisi (BARU - Mencari ID Divisi di dalam JSON target_divisi milik Indikator)
+        if ($request->filled('divisi')) {
+            $divisiId = $request->divisi;
+            $query->whereHas('indikator', function($q) use ($divisiId) {
+                // Mencari apakah ID Divisi ada di dalam array JSON target_divisi
+                $q->whereJsonContains('target_divisi', $divisiId);
+            });
+        }
+
+        // 4. Filter Kategori
         if ($request->filled('kategori')) {
             $kategoriId = $request->kategori;
             $query->whereHas('indikator', function($q) use ($kategoriId) {
@@ -33,34 +40,31 @@ class BobotKpiController extends Controller
             });
         }
 
-        // 4. Filter Status
+        // 5. Filter Status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // 5. Pagination
-        $bobots = $query->orderBy('nilai_bobot', 'desc') // Urutkan dari bobot terbesar
+        // 6. Pagination
+        $bobots = $query->orderBy('nilai_bobot', 'desc')
                         ->paginate(10)
                         ->withQueryString();
 
-        // Data untuk Dropdown Filter
+        // Data Pendukung untuk Dropdown Filter
         $kategoris = KategoriKpi::orderBy('nama_kategori', 'asc')->get();
+        $divisis = Divisi::where('status', 'Aktif')->orderBy('nama_divisi', 'asc')->get(); // Ambil data divisi
 
-        return view('admin.bobot.index', compact('bobots', 'kategoris'));
+        return view('admin.bobot.index', compact('bobots', 'kategoris', 'divisis'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // ... method create, store, edit, update, destroy TETAP SAMA ...
+    
     public function create()
     {
         $indikators = IndikatorKpi::where('status', 'Aktif')->get();
         return view('admin.bobot.create', compact('indikators'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -77,17 +81,6 @@ class BobotKpiController extends Controller
         return redirect()->route('bobot.index')->with('success', 'Bobot berhasil ditambahkan!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         $bobot = BobotKpi::findOrFail($id);
@@ -95,9 +88,6 @@ class BobotKpiController extends Controller
         return view('admin.bobot.edit', compact('bobot', 'indikators'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $request->validate([
@@ -116,9 +106,6 @@ class BobotKpiController extends Controller
         return redirect()->route('bobot.index')->with('success', 'Bobot berhasil diperbarui!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $bobot = BobotKpi::findOrFail($id);

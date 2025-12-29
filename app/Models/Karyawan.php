@@ -16,6 +16,10 @@ class Karyawan extends Model
         'id_divisi',
         'nik',
         'nama_lengkap',
+        'jenis_kelamin', // Baru
+        'tanggal_lahir', // Baru
+        'alamat',        // Baru
+        'foto',          // Baru
         'tanggal_masuk',
         'status_karyawan',
     ];

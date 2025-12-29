@@ -13,7 +13,6 @@ class PenilaianDetail extends Model
         'id_penilaianHeader',
         'id_indikator',
         'nilai_input',
-        'tanggal',
         'catatan',
     ];
 

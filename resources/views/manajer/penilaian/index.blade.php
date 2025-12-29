@@ -2,14 +2,14 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h2 class="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
-                {{ __('Input Penilaian') }}
+                {{ __('Log Aktivitas Tim') }}
             </h2>
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
                     <li class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400">
                         <a href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
-                    <li>
+                    <li aria-current="page">
                         <div class="flex items-center">
                             <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
@@ -41,8 +41,8 @@
                 {{-- TOOLBAR --}}
                 <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Riwayat Input Aktivitas Tim</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Monitoring kinerja harian anggota tim.</p>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Riwayat Input Aktivitas</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Monitoring kinerja harian anggota tim Anda.</p>
                     </div>
 
                     {{-- Tombol Tambah --}}
@@ -55,11 +55,12 @@
                 {{-- TABLE --}}
                 <div class="relative overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 border-b dark:border-gray-700">
                             <tr>
-                                <th scope="col" class="px-6 py-4 rounded-tl-lg">Karyawan & Tanggal</th>
+                                <th scope="col" class="px-6 py-4 rounded-tl-lg">Waktu Input</th>
+                                <th scope="col" class="px-6 py-4">Karyawan</th>
                                 <th scope="col" class="px-6 py-4">Aktivitas (Indikator)</th>
-                                <th scope="col" class="px-6 py-4">Realisasi</th>
+                                <th scope="col" class="px-6 py-4">Hasil / Realisasi</th>
                                 <th scope="col" class="px-6 py-4">Catatan</th>
                                 <th scope="col" class="px-6 py-4 text-center rounded-tr-lg">Aksi</th>
                             </tr>
@@ -68,75 +69,81 @@
                             @forelse($logs as $log)
                             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition duration-150">
                                 
-                                {{-- KOLOM 1: KARYAWAN & TANGGAL --}}
+                                {{-- KOLOM 1: WAKTU INPUT --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-start gap-3">
-                                        {{-- Avatar Inisial --}}
-                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white">
+                                            {{ $log->created_at->format('d M Y') }}
+                                        </span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            Pukul {{ $log->created_at->format('H:i') }}
+                                        </span>
+                                    </div>
+                                </td>
+                                
+                                {{-- KOLOM 2: KARYAWAN --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        {{-- Avatar --}}
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-sm text-sm">
                                             {{ substr($log->header->karyawan->nama_lengkap ?? 'X', 0, 1) }}
                                         </div>
                                         <div>
                                             <div class="text-sm font-bold text-gray-900 dark:text-white">
-                                                {{ $log->header->karyawan->nama_lengkap ?? 'Karyawan Dihapus' }}
+                                                {{ $log->header->karyawan->nama_lengkap ?? 'Dihapus' }}
                                             </div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                            <div class="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded inline-block mt-1">
                                                 NIK: {{ $log->header->karyawan->nik ?? '-' }}
                                             </div>
-                                            {{-- Badge Tanggal --}}
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                                {{ \Carbon\Carbon::parse($log->tanggal)->format('d M Y') }}
-                                            </span>
                                         </div>
                                     </div>
                                 </td>
 
-                                {{-- KOLOM 2: INDIKATOR --}}
+                                {{-- KOLOM 3: INDIKATOR --}}
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-bold text-gray-900 dark:text-white mb-1">
                                         {{ $log->indikator->nama_indikator ?? '-' }}
                                     </div>
                                     <div class="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded border border-blue-100 dark:border-blue-800">
-                                        <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                        <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         Target: {{ number_format($log->indikator->target->nilai_target ?? 0, 0, ',', '.') }} 
                                         {{ $log->indikator->target->jenis_target ?? '' }}
                                     </div>
                                 </td>
 
-                                {{-- KOLOM 3: REALISASI --}}
+                                {{-- KOLOM 4: HASIL --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
                                         <span class="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                                             {{ number_format($log->nilai_input, 0, ',', '.') }}
                                         </span>
-                                        <span class="text-xs text-gray-400">Hasil Capaian</span>
                                     </div>
                                 </td>
 
-                                {{-- KOLOM 4: CATATAN --}}
+                                {{-- KOLOM 5: CATATAN --}}
                                 <td class="px-6 py-4">
                                     @if($log->catatan)
                                         <div class="flex items-start gap-1">
-                                            <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
-                                            <span class="text-sm text-gray-600 dark:text-gray-300 italic line-clamp-2" title="{{ $log->catatan }}">
+                                            <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                                            <span class="text-sm text-gray-600 dark:text-gray-300 italic line-clamp-2 max-w-xs" title="{{ $log->catatan }}">
                                                 "{{ $log->catatan }}"
                                             </span>
                                         </div>
                                     @else
-                                        <span class="text-xs text-gray-400">-</span>
+                                        <span class="text-xs text-gray-400 italic">- Tidak ada catatan -</span>
                                     @endif
                                 </td>
 
-                                {{-- KOLOM 5: AKSI --}}
+                                {{-- KOLOM 6: AKSI --}}
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="{{ route('penilaian.edit', $log->getKey()) }}" class="p-2 text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-lg transition-colors duration-200" title="Edit Data">
+                                        <a href="{{ route('penilaian.edit', $log->id_penilaianDetail) }}" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg dark:text-indigo-400 dark:hover:bg-gray-700 transition" title="Edit Data">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                         </a>
 
-                                        <form action="{{ route('penilaian.destroy', $log->getKey()) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus log aktivitas ini?');">
+                                        <form action="{{ route('penilaian.destroy', $log->id_penilaianDetail) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus log aktivitas ini?');">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-colors duration-200" title="Hapus Log">
+                                            <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg dark:text-red-400 dark:hover:bg-gray-700 transition" title="Hapus Log">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>
@@ -145,12 +152,12 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                                         <p class="text-lg font-medium">Belum ada aktivitas yang diinput.</p>
                                         <p class="text-sm text-gray-400 mb-4">Mulai input penilaian kinerja harian tim Anda.</p>
-                                        <a href="{{ route('penilaian.create') }}" class="text-blue-600 hover:underline text-sm font-semibold">
+                                        <a href="{{ route('penilaian.create') }}" class="text-blue-600 hover:underline text-sm font-bold">
                                             + Input Sekarang
                                         </a>
                                     </div>

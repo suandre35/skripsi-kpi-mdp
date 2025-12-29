@@ -5,18 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\TargetKpi;
 use App\Models\IndikatorKpi;
-use App\Models\KategoriKpi; 
+use App\Models\KategoriKpi;
+use App\Models\Divisi; // Import Model Divisi
 
 class TargetKpiController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         // 1. Query Dasar dengan Eager Loading
-        // Kita tambah '.kategori' agar bisa ambil nama kategori lewat indikator
-        $query = TargetKpi::with(['indikator.kategori']);
+        $query = TargetKpi::with(['indikator.kategori']); 
 
         // 2. Filter Search (Cari berdasarkan Nama Indikator)
         if ($request->filled('search')) {
@@ -26,7 +23,17 @@ class TargetKpiController extends Controller
             });
         }
 
-        // 3. Filter Kategori (Mencari Target berdasarkan Kategori Indikatornya)
+        // 3. Filter Divisi (REVISI LOGIC JSON)
+        // Kita cari Target yang punya Indikator, dimana kolom target_divisi (JSON) mengandung ID yang dipilih
+        if ($request->filled('divisi')) {
+            $divisiId = $request->divisi;
+            $query->whereHas('indikator', function($q) use ($divisiId) {
+                // whereJsonContains sangat cocok untuk format ["1", "2"] seperti di screenshot
+                $q->whereJsonContains('target_divisi', $divisiId);
+            });
+        }
+
+        // 4. Filter Kategori
         if ($request->filled('kategori')) {
             $kategoriId = $request->kategori;
             $query->whereHas('indikator', function($q) use ($kategoriId) {
@@ -34,34 +41,31 @@ class TargetKpiController extends Controller
             });
         }
 
-        // 4. Filter Status
+        // 5. Filter Status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // 5. Pagination
+        // 6. Pagination
         $targets = $query->orderBy('id_target', 'desc')
                          ->paginate(10)
                          ->withQueryString();
 
-        // Data pendukung untuk dropdown filter di View
+        // Data Pendukung Dropdown
         $kategoris = KategoriKpi::orderBy('nama_kategori', 'asc')->get();
+        $divisis = Divisi::where('status', 'Aktif')->orderBy('nama_divisi', 'asc')->get();
 
-        return view('admin.target.index', compact('targets', 'kategoris'));
+        return view('admin.target.index', compact('targets', 'kategoris', 'divisis'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // ... method create, store, edit, update, destroy TETAP SAMA ...
+    
     public function create()
     {
         $indikators = IndikatorKpi::where('status', 'Aktif')->get();
         return view('admin.target.create', compact('indikators'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -78,28 +82,13 @@ class TargetKpiController extends Controller
         return redirect()->route('target.index')->with('success', 'Target KPI berhasil ditambahkan!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         $target = TargetKpi::findOrFail($id);
         $indikators = IndikatorKpi::where('status', 'Aktif')->get();
-
         return view('admin.target.edit', compact('target', 'indikators'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $request->validate([
@@ -115,9 +104,6 @@ class TargetKpiController extends Controller
         return redirect()->route('target.index')->with('success', 'Target KPI berhasil diperbarui!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $target = TargetKpi::findOrFail($id);

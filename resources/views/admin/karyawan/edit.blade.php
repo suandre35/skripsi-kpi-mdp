@@ -22,7 +22,7 @@
                             <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
                             </svg>
-                            <span class="ml-1 text-sm font-medium text-gray-800 dark:text-gray-100">Edit</span>
+                            <span class="ml-1 text-sm font-medium text-gray-800 dark:text-gray-100">Edit Profil</span>
                         </div>
                     </li>
                 </ol>
@@ -38,8 +38,8 @@
                 {{-- HEADER CARD --}}
                 <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Edit Profil: <span class="font-bold text-blue-600">{{ $karyawan->nama_lengkap }}</span></h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Perbarui data kepegawaian dan posisi.</p>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Edit Data: <span class="font-bold text-blue-600">{{ $karyawan->nama_lengkap }}</span></h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Perbarui informasi lengkap karyawan.</p>
                     </div>
                     {{-- Status Badge --}}
                     <span class="px-3 py-1 rounded-full text-xs font-bold {{ $karyawan->status_karyawan == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
@@ -64,37 +64,37 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('karyawan.update', $karyawan->id_karyawan) }}" method="POST">
+                    <form action="{{ route('karyawan.update', $karyawan->id_karyawan) }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        @method('PUT') {{-- PENTING: Untuk Update --}}
+                        @method('PUT') {{-- Method PUT untuk Update --}}
                         
                         <div class="space-y-8">
                             
-                            {{-- SECTION 1: AKUN & IDENTITAS --}}
+                            {{-- SECTION 1: AKUN & POSISI --}}
                             <div>
-                                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">1. Akun & Identitas Pribadi</h4>
-                                
-                                {{-- Pilih User --}}
-                                <div class="mb-6">
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Akun User (Login) <span class="text-red-500">*</span></label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                        </div>
-                                        <select name="id_user" required class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                            <option value="">-- Pilih Akun --</option>
-                                            @foreach($users as $user)
-                                                <option value="{{ $user->id_user }}" 
-                                                    {{ $user->id_user == old('id_user', $karyawan->id_user) ? 'selected' : '' }}>
-                                                    {{ $user->name }} ({{ $user->email }})
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500">List ini berisi user yang belum jadi karyawan + user milik karyawan ini sendiri.</p>
-                                </div>
-
+                                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">1. Akun & Posisi</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    
+                                    {{-- Pilih User --}}
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Akun User (Login) <span class="text-red-500">*</span></label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            </div>
+                                            <select name="id_user" required class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                                <option value="">-- Pilih Akun --</option>
+                                                @foreach($users as $user)
+                                                    <option value="{{ $user->id_user }}" 
+                                                        {{ $user->id_user == old('id_user', $karyawan->id_user) ? 'selected' : '' }}>
+                                                        {{ $user->name }} ({{ $user->email }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">Daftar ini mencakup user yang belum memiliki data karyawan, ditambah user milik karyawan ini sendiri.</p>
+                                    </div>
+
                                     {{-- NIK --}}
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nomor Induk Karyawan (NIK) <span class="text-red-500">*</span></label>
@@ -107,27 +107,8 @@
                                         </div>
                                     </div>
 
-                                    {{-- Nama Lengkap --}}
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
-                                        <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                            </div>
-                                            <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $karyawan->nama_lengkap) }}" required 
-                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- SECTION 2: POSISI & STATUS --}}
-                            <div>
-                                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">2. Posisi & Kepegawaian</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    
                                     {{-- Divisi --}}
-                                    <div class="md:col-span-2">
+                                    <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Divisi (Posisi)</label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -144,8 +125,88 @@
                                             </select>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
 
-                                    {{-- Tanggal Masuk (Saya tambahkan agar lengkap seperti Create) --}}
+                            {{-- SECTION 2: DATA PRIBADI (Sekarang Lengkap di Edit) --}}
+                            <div>
+                                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">2. Data Pribadi</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    
+                                    {{-- Nama Lengkap --}}
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            </div>
+                                            <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $karyawan->nama_lengkap) }}" required 
+                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                        </div>
+                                    </div>
+
+                                    {{-- Jenis Kelamin --}}
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Jenis Kelamin <span class="text-red-500">*</span></label>
+                                        <select name="jenis_kelamin" required class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <option value="">-- Pilih --</option>
+                                            <option value="L" {{ old('jenis_kelamin', $karyawan->jenis_kelamin) == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                            <option value="P" {{ old('jenis_kelamin', $karyawan->jenis_kelamin) == 'P' ? 'selected' : '' }}>Perempuan</option>
+                                        </select>
+                                    </div>
+
+                                    {{-- Tanggal Lahir --}}
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal Lahir <span class="text-red-500">*</span></label>
+                                        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $karyawan->tanggal_lahir) }}" required 
+                                            class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                    </div>
+
+                                    {{-- Alamat --}}
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Alamat Lengkap</label>
+                                        <textarea name="alamat" rows="3" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">{{ old('alamat', $karyawan->alamat) }}</textarea>
+                                    </div>
+
+                                    {{-- Foto Diri (Dengan Preview) --}}
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Update Foto Diri (3x4) - <span class="text-gray-500 font-normal">Biarkan kosong jika tidak ingin mengubah</span></label>
+                                        
+                                        <div class="flex flex-col md:flex-row gap-6 items-start">
+                                            {{-- Preview Foto Lama --}}
+                                            @if($karyawan->foto)
+                                                <div class="flex-shrink-0">
+                                                    <p class="text-xs text-gray-500 mb-2 font-bold uppercase">Foto Saat Ini:</p>
+                                                    <div class="w-32 h-40 rounded-lg overflow-hidden border border-gray-300 shadow-sm">
+                                                        <img src="{{ asset('storage/' . $karyawan->foto) }}" alt="Foto Karyawan" class="w-full h-full object-cover">
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="flex-shrink-0">
+                                                    <p class="text-xs text-gray-500 mb-2 font-bold uppercase">Foto Saat Ini:</p>
+                                                    <div class="w-32 h-40 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center text-gray-400">
+                                                        <span class="text-xs">Belum ada foto</span>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            {{-- Input Upload --}}
+                                            <div class="flex-grow w-full">
+                                                <input type="file" name="foto" accept="image/*" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
+                                                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Format: JPG, JPEG, PNG. Maksimal ukuran file: 2MB.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            {{-- SECTION 3: STATUS KEPEGAWAIAN --}}
+                            <div>
+                                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">3. Status Kepegawaian</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    
+                                    {{-- Tanggal Masuk --}}
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal Masuk <span class="text-red-500">*</span></label>
                                         <div class="relative">

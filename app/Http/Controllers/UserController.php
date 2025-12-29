@@ -17,6 +17,10 @@ class UserController extends Controller
         // Mulai Query
         $query = User::query();
 
+        // --- TAMBAHAN PENTING: Sembunyikan akun dengan role HRD ---
+        $query->where('role', '!=', 'HRD');
+        // ---------------------------------------------------------
+
         // 1. Logika Search (Cari Nama atau Email)
         if ($request->filled('search')) {
             $search = $request->search;
@@ -36,24 +40,19 @@ class UserController extends Controller
             $query->where('status', $request->status);
         }
 
-        // 4. Pagination (10 data per halaman) & Simpan parameter URL (withQueryString)
-        // agar saat pindah halaman, filter tidak hilang.
+        // 4. Pagination
         $users = $query->orderBy('name', 'asc')->paginate(10)->withQueryString();
 
         return view('admin.user.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // ... (Method create, store, edit, update, destroy TETAP SAMA, tidak perlu diubah) ...
+    
     public function create()
     {
         return view('admin.user.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -75,29 +74,26 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         $user = User::findOrFail($id);
+        
+        // Opsional: Cegah edit akun HRD via URL hacking
+        if ($user->role === 'HRD') {
+             return redirect()->route('users.index')->with('error', 'Akun HRD tidak dapat diedit dari sini.');
+        }
+
         return view('admin.user.edit', compact('user'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $user = User::findOrFail($id);
+
+        // Opsional: Cegah update akun HRD
+        if ($user->role === 'HRD') {
+             return redirect()->route('users.index')->with('error', 'Akun HRD tidak dapat diubah.');
+        }
 
         $request->validate([
             'name'   => ['required', 'string', 'max:255'],
@@ -123,12 +119,14 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $user = User::findOrFail($id);
+        
+        // Opsional: Cegah hapus akun HRD
+        if ($user->role === 'HRD') {
+             return redirect()->route('users.index')->with('error', 'Akun HRD tidak dapat dihapus.');
+        }
         
         if (auth()->user()->id_user == $id) {
             return back()->with('error', 'Anda tidak bisa menghapus akun sendiri!');

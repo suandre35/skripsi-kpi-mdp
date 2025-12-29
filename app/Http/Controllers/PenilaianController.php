@@ -15,20 +15,17 @@ use App\Models\Divisi;
 class PenilaianController extends Controller
 {
     /**
-     * Tampilkan Riwayat Log Aktivitas (Dashboard Monitoring)
+     * Tampilkan Riwayat Log (Tanpa Filter ribet, cuma log user login)
      */
     public function index()
     {
-        // PERBAIKAN: Ambil data DETAIL (Log), bukan Header
         $logs = PenilaianDetail::with(['header.karyawan', 'indikator.target'])
                     ->whereHas('header', function($q) {
                         $q->where('id_penilai', Auth::id());
                     })
-                    ->orderBy('tanggal', 'desc')
                     ->orderBy('created_at', 'desc')
                     ->paginate(20);
 
-        // Kirim variabel $logs agar cocok dengan view index.blade.php
         return view('manajer.penilaian.index', compact('logs'));
     }
 
@@ -39,41 +36,34 @@ class PenilaianController extends Controller
     {
         $userLogin = Auth::user();
 
-        // 1. Cek Divisi Manajer
-        $divisiDipimpin = Divisi::where('id_manajer', $userLogin->id_user)
-                                ->where('status', 'Aktif')
-                                ->first();
-
+        // Cek Divisi Manajer
+        $divisiDipimpin = Divisi::where('id_manajer', $userLogin->id_user)->where('status', 'Aktif')->first();
         if (!$divisiDipimpin) {
             return redirect()->route('dashboard')->with('error', 'Akses Ditolak! Anda bukan Kepala Divisi.');
         }
 
-        // 2. Cek Periode Aktif
+        // Cek Periode
         $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
         if (!$periodeAktif) {
             return redirect()->route('penilaian.index')->with('error', 'Tidak ada periode aktif.');
         }
 
-        // 3. Ambil Karyawan (Bawahan Divisi)
+        // Ambil Karyawan (Satu Divisi)
         $karyawans = Karyawan::where('status_karyawan', 'Aktif')
                              ->where('id_divisi', $divisiDipimpin->id_divisi)
                              ->where('id_user', '!=', $userLogin->id_user)
                              ->get();
 
-        // 4. Ambil Struktur KPI Sesuai Divisi (Logic JSON Column)
+        // Ambil Struktur KPI Sesuai Divisi
         $myDivisiId = (string) $divisiDipimpin->id_divisi;
-
         $kategoris = KategoriKpi::with(['indikators' => function($query) {
-            $query->where('status', 'Aktif')
-                  ->with('target'); // Load Data Target
+            $query->where('status', 'Aktif')->with('target'); 
         }])->where('status', 'Aktif')->get();
 
-        // Filter Indikator yang target_divisi-nya cocok dengan divisi manajer
+        // Filter Indikator (Logic JSON)
         $kategoris = $kategoris->map(function ($kategori) use ($myDivisiId) {
             $filteredIndikators = $kategori->indikators->filter(function ($indikator) use ($myDivisiId) {
-                // Ambil array target_divisi, jika null anggap array kosong
                 $targets = $indikator->target_divisi ?? [];
-                // Cek apakah ID divisi manajer ada di dalam target indikator
                 return in_array($myDivisiId, $targets);
             });
             $kategori->setRelation('indikators', $filteredIndikators);
@@ -84,24 +74,19 @@ class PenilaianController extends Controller
     }
 
     /**
-     * Simpan Log Harian
+     * Simpan Log (TANPA TANGGAL MANUAL)
      */
     public function store(Request $request)
     {
-        // 1. Validasi Data
         $request->validate([
             'id_karyawan' => 'required|exists:karyawans,id_karyawan',
             'id_periode'  => 'required|exists:periode_evaluasis,id_periode',
-            'tanggal'     => 'required|date',
-            // Kita hapus validasi 'required' pada array aktivitas agar tidak error jika user lupa isi
-            // Validasi isinya saja:
             'aktivitas.*.nilai' => 'nullable|numeric|min:0',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // Cek apakah ada minimal SATU data yang diisi?
             $hasData = false;
             if ($request->has('aktivitas')) {
                 foreach ($request->aktivitas as $data) {
@@ -113,21 +98,16 @@ class PenilaianController extends Controller
             }
 
             if (!$hasData) {
-                // Jika user klik simpan tapi kosong semua, kembalikan dengan error
-                return redirect()->back()->with('error', 'Mohon isi minimal satu hasil pekerjaan sebelum menyimpan.');
+                return redirect()->back()->with('error', 'Isi minimal satu nilai.');
             }
 
-            // ... Lanjut proses simpan Header & Detail (Kode sama seperti sebelumnya) ...
-            
             $header = PenilaianHeader::firstOrCreate(
                 [
                     'id_karyawan' => $request->id_karyawan,
                     'id_periode'  => $request->id_periode,
                 ],
                 [
-                    'id_penilai'        => Auth::id(),
-                    'tanggal_penilaian' => now(),
-                    'total_nilai'       => 0 
+                    'id_penilai'  => Auth::id(),
                 ]
             );
 
@@ -136,7 +116,6 @@ class PenilaianController extends Controller
                     PenilaianDetail::create([
                         'id_penilaianHeader' => $header->id_penilaianHeader,
                         'id_indikator'       => $id_indikator,
-                        'tanggal'            => $request->tanggal,
                         'nilai_input'        => $data['nilai'],
                         'catatan'            => $data['catatan'] ?? null,
                     ]);
@@ -144,33 +123,30 @@ class PenilaianController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('penilaian.index')->with('success', 'Log aktivitas harian berhasil disimpan!');
+            return redirect()->route('penilaian.index')->with('success', 'Berhasil disimpan!');
 
         } catch (\Exception $e) {
             DB::rollback();
-            // Pesan error ini sekarang AKAN MUNCUL di layar berkat update View tadi
-            return redirect()->back()->with('error', 'Gagal menyimpan: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
         }
     }
 
     /**
-     * Tampilkan Form Edit untuk Log Spesifik
+     * Edit Log
      */ 
     public function edit($id)
     {
-        // Ambil data log beserta info karyawan & indikatornya
         $log = PenilaianDetail::with(['header.karyawan', 'indikator.target'])->findOrFail($id);
 
-        // Security: Pastikan yang edit adalah penilai yang sama (Opsional tapi disarankan)
         if ($log->header->id_penilai != Auth::id()) {
-            return redirect()->route('penilaian.index')->with('error', 'Anda tidak memiliki akses untuk mengedit log ini.');
+            return redirect()->route('penilaian.index')->with('error', 'Akses ditolak.');
         }
 
         return view('manajer.penilaian.edit', compact('log'));
     }
 
     /**
-     * Simpan Perubahan Log
+     * Update Log
      */
     public function update(Request $request, $id)
     {
@@ -181,49 +157,40 @@ class PenilaianController extends Controller
 
         try {
             $log = PenilaianDetail::findOrFail($id);
-
-            // Update Data
             $log->update([
                 'nilai_input' => $request->nilai_input,
                 'catatan'     => $request->catatan,
-                // Jika ingin tanggal bisa diedit juga, uncomment baris ini:
-                // 'tanggal'     => $request->tanggal, 
             ]);
 
-            return redirect()->route('penilaian.index')->with('success', 'Log aktivitas berhasil diperbarui!');
+            return redirect()->route('penilaian.index')->with('success', 'Diperbarui!');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal update.');
         }
     }
 
     /**
-     * Hapus Log Aktivitas (Jika salah input)
+     * Hapus Log
      */
     public function destroy($id)
     {
-        try {
-            $log = PenilaianDetail::findOrFail($id);
-            
-            // Pastikan yang menghapus adalah penilai yang bersangkutan (Security check)
-            if ($log->header->id_penilai != Auth::id()) {
-                abort(403, 'Anda tidak berhak menghapus data ini.');
-            }
-
-            $log->delete();
-
-            return redirect()->back()->with('success', 'Log aktivitas berhasil dihapus.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menghapus data.');
+        $log = PenilaianDetail::findOrFail($id);
+        if ($log->header->id_penilai != Auth::id()) {
+            abort(403);
         }
+        $log->delete();
+        return redirect()->back()->with('success', 'Dihapus.');
     }
+
+    // ----------------------------------------------------------------------
+    //  METHOD YANG HILANG (UNTUK LAPORAN RAPOR TIM)
+    // ----------------------------------------------------------------------
 
     /**
      * Halaman Rapor Kinerja Tim (Khusus Manajer)
      */
     public function laporan(Request $request)
     {
-        // 1. Ambil Data Manajer yang Login
         $user = Auth::user();
         $manajer = Karyawan::with('divisi')->where('id_user', $user->id_user)->first();
 
@@ -231,17 +198,14 @@ class PenilaianController extends Controller
             return redirect()->route('dashboard')->with('error', 'Profil Manajer belum ditemukan!');
         }
 
-        // 2. Filter Periode
         $periodes = PeriodeEvaluasi::all();
         $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
         $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
 
-        // 3. Query Dasar Karyawan (Satu Divisi)
         $query = Karyawan::where('id_divisi', $manajer->id_divisi)
                          ->where('status_karyawan', 'Aktif')
-                         ->where('id_karyawan', '!=', $manajer->id_karyawan); // Manajer tidak menilai diri sendiri di sini
+                         ->where('id_karyawan', '!=', $manajer->id_karyawan); 
 
-        // --- TAMBAHAN LOGIKA SEARCH ---
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -249,11 +213,9 @@ class PenilaianController extends Controller
                   ->orWhere('nik', 'LIKE', "%{$search}%");
             });
         }
-        // ------------------------------
 
         $karyawans = $query->get();
 
-        // 4. Hitung Skor Ringkas
         foreach ($karyawans as $k) {
             if ($selectedPeriode) {
                 $k->skor_saat_ini = $this->hitungSkorPrivate($k->id_karyawan, $selectedPeriode, $manajer->id_divisi);
@@ -271,16 +233,14 @@ class PenilaianController extends Controller
     public function detailLaporan($id_karyawan)
     {
         $karyawan = Karyawan::findOrFail($id_karyawan);
-        
-        // Validasi: Pastikan Karyawan ini satu divisi dengan Manajer yang login (Security Check)
         $user = Auth::user();
         $manajer = Karyawan::where('id_user', $user->id_user)->first();
+        
         if($manajer->id_divisi != $karyawan->id_divisi){
             abort(403, 'Anda tidak berhak melihat rapor divisi lain.');
         }
 
         $periode = PeriodeEvaluasi::where('status', 'Aktif')->first();
-        // Jika mau lihat history, bisa dimodifikasi ambil dari request param
         
         if(!$periode) {
             return redirect()->back()->with('error', 'Tidak ada periode aktif.');
@@ -291,7 +251,8 @@ class PenilaianController extends Controller
         return view('manajer.penilaian.detail', compact('karyawan', 'periode', 'dataRapor'));
     }
 
-    // --- HELPER FUNCTION (Copy logic kalkulasi agar mandiri) ---
+    // --- HELPER FUNCTION (Logic Hitung Skor) ---
+    
     private function hitungSkorPrivate($idKaryawan, $idPeriode, $idDivisi)
     {
         $data = $this->getDetailSkorPrivate($idKaryawan, $idPeriode, $idDivisi);
@@ -300,12 +261,10 @@ class PenilaianController extends Controller
 
     private function getDetailSkorPrivate($idKaryawan, $idPeriode, $idDivisiStr)
     {
-        // 1. Ambil Header Penilaian
         $header = PenilaianHeader::where('id_karyawan', $idKaryawan)
                                  ->where('id_periode', $idPeriode)
                                  ->first();
 
-        // 2. Ambil Semua Indikator Aktif
         $allIndikators = KategoriKpi::with(['indikators' => function($q) {
             $q->where('status', 'Aktif')->with(['target', 'bobot']);
         }])->where('status', 'Aktif')->get();
@@ -315,14 +274,12 @@ class PenilaianController extends Controller
 
         foreach ($allIndikators as $kategori) {
             foreach ($kategori->indikators as $indikator) {
-                // Filter Divisi (Penting!)
                 $targetsDivisi = $indikator->target_divisi ?? [];
                 if (!in_array((string)$idDivisiStr, $targetsDivisi)) continue;
 
                 $nilaiTarget = $indikator->target->nilai_target ?? 0;
                 $nilaiBobot = $indikator->bobot->first()->nilai_bobot ?? 0;
 
-                // Hitung Realisasi
                 $totalRealisasi = 0;
                 if ($header) {
                     $totalRealisasi = PenilaianDetail::where('id_penilaianHeader', $header->id_penilaianHeader)
@@ -330,7 +287,6 @@ class PenilaianController extends Controller
                                                      ->sum('nilai_input');
                 }
 
-                // Hitung Capaian
                 $pencapaian = ($nilaiTarget > 0) ? ($totalRealisasi / $nilaiTarget) * 100 : 0;
                 $skorKontribusi = ($pencapaian * $nilaiBobot) / 100;
 
