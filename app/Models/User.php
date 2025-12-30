@@ -28,7 +28,7 @@ class User extends Authenticatable
 
     public function karyawan()
     {
-        // Parameter: Model tujuan, Foreign Key di tabel tujuan, Local Key di tabel ini
+        // Parameter: (ModelTujuan, ForeignKeyDiTabelTujuan, LocalKeyDiTabelIni)
         return $this->hasOne(Karyawan::class, 'id_user', 'id_user');
     }
 

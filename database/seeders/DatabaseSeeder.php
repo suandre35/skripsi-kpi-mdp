@@ -20,64 +20,82 @@ class DatabaseSeeder extends Seeder
         User::truncate();
         Schema::enableForeignKeyConstraints();
 
-        $passwordDefault = Hash::make('password'); // Password: password
+        $passwordDefault = Hash::make('password'); // Password default: password
 
         // =====================================================================
-        // BAGIAN 1: HRD (ADMIN / SUPERUSER)
+        // 1. SETUP DIVISI HRD (Role: HRD & Karyawan)
         // =====================================================================
-        
-        // 1.1 Buat Divisi HRD
         $divHRD = Divisi::create([
-            'nama_divisi' => 'Human Resource',
-            // deskripsi (nullable) -> SKIP
+            'nama_divisi' => 'HRD',
             'status'      => true,
         ]);
 
-        // 1.2 Buat User HRD
-        $userHRD = User::create([
+        // A. Manager HRD (Role: HRD)
+        $userMgrHRD = User::create([
             'name'     => 'Manager HRD',
-            'email'    => 'hrd@kantor.com',
+            'email'    => 'hrd.mgr@kantor.com',
             'password' => $passwordDefault,
-            'role'     => 'HRD',
+            'role'     => 'HRD', // Role khusus Admin/HRD
             'status'   => true,
         ]);
 
-        // 1.3 Buat Data Karyawan HRD
         Karyawan::create([
-            'id_user'       => $userHRD->id_user,
+            'id_user'       => $userMgrHRD->id_user,
             'id_divisi'     => $divHRD->id_divisi,
-            'nik'           => 'HRD-001',
+            'nik'           => 'HRD-MGR',
             'nama_lengkap'  => 'Siti Aminah, S.Psi',
-            'jenis_kelamin' => 'P',           // Wajib: L/P
-            'tanggal_lahir' => '1990-05-15',  // Wajib
-            'alamat'        => 'Jl. Sudirman No. 1, Jakarta', // Wajib
-            'tanggal_masuk' => '2015-02-10',  // Wajib
-            // foto (nullable) -> SKIP
+            'jenis_kelamin' => 'P',
+            'tanggal_lahir' => '1985-05-15',
+            'alamat'        => 'Jl. Sudirman No. 1, Jakarta',
+            'tanggal_masuk' => '2015-02-10',
             'status'        => true,
         ]);
 
         // Set Manager untuk Divisi HRD
-        $divHRD->update(['id_manajer' => $userHRD->id_user]);
+        $divHRD->update(['id_manajer' => $userMgrHRD->id_user]);
+
+        // B. Staff HRD (Role: Karyawan)
+        $userStaffHRD = User::create([
+            'name'     => 'Staff HRD',
+            'email'    => 'hrd.staff@kantor.com',
+            'password' => $passwordDefault,
+            'role'     => 'Karyawan',
+            'status'   => true,
+        ]);
+
+        Karyawan::create([
+            'id_user'       => $userStaffHRD->id_user,
+            'id_divisi'     => $divHRD->id_divisi,
+            'nik'           => 'HRD-STF-01',
+            'nama_lengkap'  => 'Dina Staff HRD',
+            'jenis_kelamin' => 'P',
+            'tanggal_lahir' => '1998-03-12',
+            'alamat'        => 'Jl. Mawar No. 10, Jakarta',
+            'tanggal_masuk' => '2022-01-15',
+            'status'        => true,
+        ]);
 
 
         // =====================================================================
-        // BAGIAN 2: DIVISI & KARYAWAN LAIN
+        // 2. SETUP DIVISI LAINNYA (Logistik, Keuangan, Accounting, Service, Store)
         // =====================================================================
-
-        $listDivisi = ['IT Development', 'Finance', 'Marketing', 'Operasional'];
+        
+        $listDivisi = ['Logistik', 'Keuangan', 'Accounting', 'Service', 'Store'];
         $counter = 1;
 
         foreach ($listDivisi as $namaDivisi) {
             
-            // 2.1 Buat Divisi
+            // Buat Divisi
             $divisi = Divisi::create([
                 'nama_divisi' => $namaDivisi,
                 'status'      => true,
             ]);
 
-            // --- A. BUAT MANAGER ---
-            $slug = strtolower(explode(' ', $namaDivisi)[0]); // Ambil kata pertama utk email (it, finance, dll)
-            
+            // Slug untuk email & nik (misal: Logistik -> logistik)
+            $slug = strtolower($namaDivisi);
+            $kodeNik = strtoupper(substr($namaDivisi, 0, 3)); // LOG, KEU, ACC, SER, STO
+
+            // --- A. MANAGER (Role: Manajer) ---
             $userManager = User::create([
                 'name'     => 'Manager ' . $namaDivisi,
                 'email'    => $slug . '.mgr@kantor.com',
@@ -89,12 +107,12 @@ class DatabaseSeeder extends Seeder
             Karyawan::create([
                 'id_user'       => $userManager->id_user,
                 'id_divisi'     => $divisi->id_divisi,
-                'nik'           => strtoupper(substr($slug, 0, 3)) . '-001',
-                'nama_lengkap'  => 'Budi ' . $namaDivisi, // Nama Dummy
+                'nik'           => $kodeNik . '-MGR',
+                'nama_lengkap'  => 'Budi Manager ' . $namaDivisi,
                 'jenis_kelamin' => 'L',
-                'tanggal_lahir' => '1985-08-17',
+                'tanggal_lahir' => '1980-08-17',
                 'alamat'        => 'Jl. Kebon Jeruk No. ' . $counter,
-                'tanggal_masuk' => '2018-01-01',
+                'tanggal_masuk' => '2016-01-01',
                 'status'        => true,
             ]);
 
@@ -102,7 +120,7 @@ class DatabaseSeeder extends Seeder
             $divisi->update(['id_manajer' => $userManager->id_user]);
 
 
-            // --- B. BUAT STAFF (2 Orang per Divisi) ---
+            // --- B. STAFF (Role: Karyawan) - Buat 2 staff per divisi ---
             for ($i = 1; $i <= 2; $i++) {
                 $userStaff = User::create([
                     'name'     => 'Staff ' . $namaDivisi . ' ' . $i,
@@ -115,9 +133,9 @@ class DatabaseSeeder extends Seeder
                 Karyawan::create([
                     'id_user'       => $userStaff->id_user,
                     'id_divisi'     => $divisi->id_divisi,
-                    'nik'           => strtoupper(substr($slug, 0, 3)) . '-00' . ($i + 1),
+                    'nik'           => $kodeNik . '-STF-0' . $i,
                     'nama_lengkap'  => 'Andi Staff ' . $namaDivisi . ' ' . $i,
-                    'jenis_kelamin' => ($i % 2 == 0) ? 'P' : 'L', // Selang seling L/P
+                    'jenis_kelamin' => ($i % 2 == 0) ? 'P' : 'L',
                     'tanggal_lahir' => '1995-0' . $i . '-20',
                     'alamat'        => 'Jl. Merdeka No. ' . ($counter + $i),
                     'tanggal_masuk' => '2021-06-15',
@@ -125,7 +143,7 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
 
-            $counter += 5; // Biar alamat beda-beda dikit
+            $counter += 5;
         }
     }
 }
