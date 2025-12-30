@@ -42,8 +42,8 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Perbarui informasi divisi dan struktur kepemimpinan.</p>
                     </div>
                     {{-- Status Badge --}}
-                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $divisi->status == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $divisi->status }}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $divisi->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        {{ $divisi->status ? 'Aktif' : 'Nonaktif' }}
                     </span>
                 </div>
 
@@ -66,7 +66,7 @@
 
                     <form action="{{ route('divisi.update', $divisi->id_divisi) }}" method="POST">
                         @csrf
-                        @method('PUT') {{-- Wajib untuk Update --}}
+                        @method('PUT')
                         
                         <div class="space-y-8">
                             
@@ -81,7 +81,6 @@
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                                         </div>
-                                        {{-- Value old mengambil data lama jika gagal validasi, atau data dari database jika baru dibuka --}}
                                         <input type="text" name="nama_divisi" value="{{ old('nama_divisi', $divisi->nama_divisi) }}" required 
                                             class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
                                     </div>
@@ -100,7 +99,7 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                             </div>
-                                            <select name="id_manajer" required class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <select name="id_manajer" required class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150 cursor-pointer">
                                                 <option value="">-- Pilih Manajer --</option>
                                                 @foreach($manajers as $manajer)
                                                     <option value="{{ $manajer->id_user }}" 
@@ -115,10 +114,15 @@
                                     {{-- Status --}}
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                                        <select name="status" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                            <option value="1" {{ old('status', $divisi->status) == true ? 'selected' : '' }}>Aktif</option>
-                                            <option value="0" {{ old('status', $divisi->status) == false ? 'selected' : '' }}>Nonaktif</option>
-                                        </select>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            </div>
+                                            <select name="status" class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150 cursor-pointer">
+                                                <option value="1" {{ old('status', $divisi->status) == 1 ? 'selected' : '' }}>Aktif</option>
+                                                <option value="0" {{ old('status', $divisi->status) == 0 ? 'selected' : '' }}>Nonaktif</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

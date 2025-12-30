@@ -99,7 +99,6 @@
                             <tr>
                                 <th scope="col" class="px-6 py-4 rounded-tl-lg">Nama Kategori</th>
                                 <th scope="col" class="px-6 py-4">Deskripsi</th>
-                                <th scope="col" class="px-6 py-4 text-center">Jml Indikator</th>
                                 <th scope="col" class="px-6 py-4">Status</th>
                                 <th scope="col" class="px-6 py-4 text-center rounded-tr-lg">Aksi</th>
                             </tr>
@@ -126,13 +125,6 @@
                                     <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
                                         {{ $kategori->deskripsi ?? '-' }}
                                     </p>
-                                </td>
-
-                                {{-- Jumlah Indikator --}}
-                                <td class="px-6 py-4 text-center">
-                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">
-                                        {{ $kategori->indikators_count }} Item
-                                    </span>
                                 </td>
 
                                 {{-- Status --}}
