@@ -14,39 +14,42 @@ class KaryawanPanelController extends Controller
 {
     public function index()
     {
-        // 1. Cari Data Karyawan berdasarkan User yang Login
+        // 1. Cari Data Karyawan
         $user = Auth::user();
         $karyawan = Karyawan::with('divisi')->where('id_user', $user->id_user)->first();
 
-        // Jika user login bukan karyawan (misal admin iseng login pakai role karyawan), cegah error
         if (!$karyawan) {
             return redirect()->route('dashboard')->with('error', 'Data Karyawan tidak ditemukan.');
         }
 
-        // 2. Ambil Periode Aktif (PERBAIKAN: status -> true)
+        // 2. Ambil Periode Aktif
         $periode = PeriodeEvaluasi::where('status', true)->first();
         
-        // 3. Hitung Skor (Jika ada periode aktif)
+        // 3. LOGIKA BARU (PERBAIKAN): Cek Akses Rapor dari kolom 'pengumuman'
+        // pengumuman == 1 (True) -> Buka
+        // pengumuman == 0 (False) -> Tutup
+        $isRaporOpen = $periode && $periode->pengumuman == true;
+
         $dataRapor = [
             'total_skor_akhir' => 0,
             'detail' => []
         ];
 
-        if ($periode) {
+        // 4. Hitung Skor HANYA JIKA Akses Dibuka
+        if ($isRaporOpen) {
             $dataRapor = $this->getDetailSkor($karyawan->id_karyawan, $periode->id_periode, $karyawan->id_divisi);
         }
 
-        return view('karyawan.index', compact('karyawan', 'periode', 'dataRapor'));
+        return view('karyawan.index', compact('karyawan', 'periode', 'dataRapor', 'isRaporOpen'));
     }
 
-    // --- HELPER FUNCTION (Logic Hitungan SAMA PERSIS dengan Manajer) ---
+    // --- HELPER FUNCTION ---
     private function getDetailSkor($idKaryawan, $idPeriode, $idDivisiStr)
     {
         $header = PenilaianHeader::where('id_karyawan', $idKaryawan)
                                  ->where('id_periode', $idPeriode)
                                  ->first();
 
-        // PERBAIKAN: status -> true
         $allIndikators = KategoriKpi::with(['indikators' => function($q) {
             $q->where('status', true)->with(['target', 'bobot']);
         }])->where('status', true)->get();
@@ -56,15 +59,12 @@ class KaryawanPanelController extends Controller
 
         foreach ($allIndikators as $kategori) {
             foreach ($kategori->indikators as $indikator) {
-                // Filter Divisi
                 $targetsDivisi = $indikator->target_divisi ?? [];
-                // Pastikan tipe data sama (string vs int)
                 if (!in_array((string)$idDivisiStr, $targetsDivisi)) continue;
 
                 $nilaiTarget = $indikator->target->nilai_target ?? 0;
                 $nilaiBobot = $indikator->bobot->first()->nilai_bobot ?? 0;
 
-                // Hitung Realisasi
                 $totalRealisasi = 0;
                 if ($header) {
                     $totalRealisasi = PenilaianDetail::where('id_penilaianHeader', $header->id_penilaianHeader)
@@ -72,7 +72,6 @@ class KaryawanPanelController extends Controller
                                                      ->sum('nilai_input');
                 }
 
-                // Hitung Capaian
                 $pencapaian = ($nilaiTarget > 0) ? ($totalRealisasi / $nilaiTarget) * 100 : 0;
                 $skorKontribusi = ($pencapaian * $nilaiBobot) / 100;
 
