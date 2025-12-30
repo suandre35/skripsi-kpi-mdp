@@ -11,6 +11,7 @@ use App\Models\Karyawan;
 use App\Models\PeriodeEvaluasi;
 use App\Models\KategoriKpi;
 use App\Models\Divisi;
+use Carbon\Carbon;
 
 class PenilaianController extends Controller
 {
@@ -26,7 +27,26 @@ class PenilaianController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->paginate(20);
 
-        return view('manajer.penilaian.index', compact('logs'));
+        // --- TAMBAHAN LOGIC UX ---
+        // Cek apakah tombol input harus dinyalakan atau dimatikan
+        $periode = PeriodeEvaluasi::where('status', true)->first(); // Pakai boolean true
+        $isInputOpen = false;
+        $periodePesan = '';
+
+        if ($periode) {
+            $sekarang = Carbon::now();
+            if ($sekarang->lt($periode->tanggal_mulai)) {
+                $periodePesan = 'Periode evaluasi belum dimulai. (Mulai: ' . $periode->tanggal_mulai->format('d M Y') . ')';
+            } elseif ($sekarang->gt($periode->tanggal_selesai)) {
+                $periodePesan = 'Periode evaluasi telah berakhir pada ' . $periode->tanggal_selesai->format('d M Y H:i');
+            } else {
+                $isInputOpen = true; // Waktu valid
+            }
+        } else {
+            $periodePesan = 'Tidak ada periode evaluasi yang aktif saat ini.';
+        }
+
+        return view('manajer.penilaian.index', compact('logs', 'isInputOpen', 'periodePesan'));
     }
 
     /**
@@ -36,35 +56,44 @@ class PenilaianController extends Controller
     {
         $userLogin = Auth::user();
 
-        // Cek Divisi Manajer
-        $divisiDipimpin = Divisi::where('id_manajer', $userLogin->id_user)->where('status', 'Aktif')->first();
+        // 1. Cek Divisi Manajer
+        $divisiDipimpin = Divisi::where('id_manajer', $userLogin->id_user)->where('status', true)->first();
         if (!$divisiDipimpin) {
             return redirect()->route('dashboard')->with('error', 'Akses Ditolak! Anda bukan Kepala Divisi.');
         }
 
-        // Cek Periode
-        $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        // 2. Cek Periode & Waktu (PERBAIKAN DISINI)
+        // Agar kalau dipaksa masuk URL, dia nendang balik ke index penilaian, bukan dashboard
+        $periodeAktif = PeriodeEvaluasi::where('status', true)->first();
+        
         if (!$periodeAktif) {
-            return redirect()->route('penilaian.index')->with('error', 'Tidak ada periode aktif.');
+            return redirect()->route('penilaian.index')->with('error', 'Akses ditutup. Tidak ada periode aktif.');
         }
 
-        // Ambil Karyawan (Satu Divisi)
-        $karyawans = Karyawan::where('status_karyawan', 'Aktif')
+        $sekarang = Carbon::now();
+        if ($sekarang->lt($periodeAktif->tanggal_mulai) || $sekarang->gt($periodeAktif->tanggal_selesai)) {
+            return redirect()->route('penilaian.index')->with('error', 'Saat ini bukan waktu penginputan penilaian.');
+        }
+
+        // 3. Ambil Karyawan (Satu Divisi)
+        // Pastikan status karyawan juga dicek pake boolean true jika migrasi sudah update
+        $karyawans = Karyawan::where('status', true) 
                              ->where('id_divisi', $divisiDipimpin->id_divisi)
                              ->where('id_user', '!=', $userLogin->id_user)
                              ->get();
 
-        // Ambil Struktur KPI Sesuai Divisi
+        // 4. Ambil Struktur KPI Sesuai Divisi
         $myDivisiId = (string) $divisiDipimpin->id_divisi;
         $kategoris = KategoriKpi::with(['indikators' => function($query) {
-            $query->where('status', 'Aktif')->with('target'); 
-        }])->where('status', 'Aktif')->get();
+            $query->where('status', true)->with('target'); 
+        }])->where('status', true)->get();
 
-        // Filter Indikator (Logic JSON)
+        // Filter Indikator
         $kategoris = $kategoris->map(function ($kategori) use ($myDivisiId) {
             $filteredIndikators = $kategori->indikators->filter(function ($indikator) use ($myDivisiId) {
                 $targets = $indikator->target_divisi ?? [];
-                return in_array($myDivisiId, $targets);
+                // Pastikan target_divisi dicasting ke array jika null (safety)
+                return is_array($targets) && in_array($myDivisiId, $targets);
             });
             $kategori->setRelation('indikators', $filteredIndikators);
             return $kategori;
@@ -78,6 +107,8 @@ class PenilaianController extends Controller
      */
     public function store(Request $request)
     {
+        // ... (Isi sama seperti sebelumnya, tidak ada perubahan logika waktu disini) ...
+        // Kode store Anda yang lama sudah aman.
         $request->validate([
             'id_karyawan' => 'required|exists:karyawans,id_karyawan',
             'id_periode'  => 'required|exists:periode_evaluasis,id_periode',
@@ -137,11 +168,7 @@ class PenilaianController extends Controller
     public function edit($id)
     {
         $log = PenilaianDetail::with(['header.karyawan', 'indikator.target'])->findOrFail($id);
-
-        if ($log->header->id_penilai != Auth::id()) {
-            return redirect()->route('penilaian.index')->with('error', 'Akses ditolak.');
-        }
-
+        if ($log->header->id_penilai != Auth::id()) return redirect()->route('penilaian.index')->with('error', 'Akses ditolak.');
         return view('manajer.penilaian.edit', compact('log'));
     }
 
@@ -150,20 +177,11 @@ class PenilaianController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'nilai_input' => 'required|numeric|min:0',
-            'catatan'     => 'nullable|string|max:255',
-        ]);
-
+        $request->validate(['nilai_input' => 'required|numeric|min:0', 'catatan' => 'nullable|string|max:255']);
         try {
             $log = PenilaianDetail::findOrFail($id);
-            $log->update([
-                'nilai_input' => $request->nilai_input,
-                'catatan'     => $request->catatan,
-            ]);
-
+            $log->update(['nilai_input' => $request->nilai_input, 'catatan' => $request->catatan]);
             return redirect()->route('penilaian.index')->with('success', 'Diperbarui!');
-
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal update.');
         }
@@ -175,9 +193,7 @@ class PenilaianController extends Controller
     public function destroy($id)
     {
         $log = PenilaianDetail::findOrFail($id);
-        if ($log->header->id_penilai != Auth::id()) {
-            abort(403);
-        }
+        if ($log->header->id_penilai != Auth::id()) abort(403);
         $log->delete();
         return redirect()->back()->with('success', 'Dihapus.');
     }
@@ -199,11 +215,13 @@ class PenilaianController extends Controller
         }
 
         $periodes = PeriodeEvaluasi::all();
-        $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        // PERBAIKAN: status -> true
+        $periodeAktif = PeriodeEvaluasi::where('status', true)->first();
         $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
 
         $query = Karyawan::where('id_divisi', $manajer->id_divisi)
-                         ->where('status_karyawan', 'Aktif')
+                         // PERBAIKAN FATAL DISINI: status_karyawan='Aktif' -> status=true
+                         ->where('status', true)
                          ->where('id_karyawan', '!=', $manajer->id_karyawan); 
 
         if ($request->filled('search')) {
@@ -240,7 +258,8 @@ class PenilaianController extends Controller
             abort(403, 'Anda tidak berhak melihat rapor divisi lain.');
         }
 
-        $periode = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        // PERBAIKAN: status -> true
+        $periode = PeriodeEvaluasi::where('status', true)->first();
         
         if(!$periode) {
             return redirect()->back()->with('error', 'Tidak ada periode aktif.');
@@ -265,9 +284,10 @@ class PenilaianController extends Controller
                                  ->where('id_periode', $idPeriode)
                                  ->first();
 
+        // PERBAIKAN: status -> true
         $allIndikators = KategoriKpi::with(['indikators' => function($q) {
-            $q->where('status', 'Aktif')->with(['target', 'bobot']);
-        }])->where('status', 'Aktif')->get();
+            $q->where('status', true)->with(['target', 'bobot']);
+        }])->where('status', true)->get();
 
         $totalSkorAkhir = 0;
         $detail = [];
