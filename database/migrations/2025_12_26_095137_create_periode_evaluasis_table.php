@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('nama_periode');
             $table->dateTime('tanggal_mulai');
             $table->dateTime('tanggal_selesai');
-            $table->dateTime('tanggal_pengumuman');
-            $table->enum('status', ['Aktif', 'Nonaktif'])->default('Nonaktif');
+            $table->boolean('pengumuman')->default(false);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

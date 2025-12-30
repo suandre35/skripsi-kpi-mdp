@@ -6,16 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\BobotKpi;
 use App\Models\KategoriKpi;
 use App\Models\IndikatorKpi;
-use App\Models\Divisi; // 1. IMPORT DIVISI
+use App\Models\Divisi;
 
 class BobotKpiController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Query Dasar dengan Eager Loading
         $query = BobotKpi::with(['indikator.kategori']);
 
-        // 2. Filter Search (Nama Indikator)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('indikator', function($q) use ($search) {
@@ -23,16 +21,13 @@ class BobotKpiController extends Controller
             });
         }
 
-        // 3. Filter Divisi (BARU - Mencari ID Divisi di dalam JSON target_divisi milik Indikator)
         if ($request->filled('divisi')) {
             $divisiId = $request->divisi;
             $query->whereHas('indikator', function($q) use ($divisiId) {
-                // Mencari apakah ID Divisi ada di dalam array JSON target_divisi
                 $q->whereJsonContains('target_divisi', $divisiId);
             });
         }
 
-        // 4. Filter Kategori
         if ($request->filled('kategori')) {
             $kategoriId = $request->kategori;
             $query->whereHas('indikator', function($q) use ($kategoriId) {
@@ -40,42 +35,42 @@ class BobotKpiController extends Controller
             });
         }
 
-        // 5. Filter Status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // 6. Pagination
-        $bobots = $query->orderBy('nilai_bobot', 'desc')
-                        ->paginate(10)
-                        ->withQueryString();
-
-        // Data Pendukung untuk Dropdown Filter
+        $bobots = $query->orderBy('nilai_bobot', 'desc')->paginate(10)->withQueryString();
         $kategoris = KategoriKpi::orderBy('nama_kategori', 'asc')->get();
-        $divisis = Divisi::where('status', 'Aktif')->orderBy('nama_divisi', 'asc')->get(); // Ambil data divisi
+        $divisis = Divisi::where('status', true)->orderBy('nama_divisi', 'asc')->get();
 
         return view('admin.bobot.index', compact('bobots', 'kategoris', 'divisis'));
     }
 
-    // ... method create, store, edit, update, destroy TETAP SAMA ...
-    
     public function create()
     {
-        $indikators = IndikatorKpi::where('status', 'Aktif')->get();
-        return view('admin.bobot.create', compact('indikators'));
+        // 1. Ambil indikator yang belum punya bobot
+        $indikators = IndikatorKpi::where('status', true)
+                        ->whereDoesntHave('bobot') 
+                        ->get();
+
+        // 2. Hitung Penggunaan Bobot Per Divisi
+        $divisiUsage = $this->getDivisiUsage();
+
+        return view('admin.bobot.create', compact('indikators', 'divisiUsage'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'id_indikator' => 'required|exists:indikator_kpis,id_indikator',
+            'id_indikator' => 'required|exists:indikator_kpis,id_indikator|unique:bobot_kpis,id_indikator',
             'nilai_bobot'  => 'required|integer|min:1|max:100',
         ]);
+
+        // Validasi Backend (Double Check)
+        $errorMsg = $this->validateTotalBobot($request->id_indikator, $request->nilai_bobot);
+        if ($errorMsg) {
+            return redirect()->back()->withInput()->with('error', $errorMsg);
+        }
 
         BobotKpi::create([
             'id_indikator' => $request->id_indikator,
             'nilai_bobot'  => $request->nilai_bobot,
-            'status'       => 'Aktif',
         ]);
 
         return redirect()->route('bobot.index')->with('success', 'Bobot berhasil ditambahkan!');
@@ -84,23 +79,38 @@ class BobotKpiController extends Controller
     public function edit(string $id)
     {
         $bobot = BobotKpi::findOrFail($id);
-        $indikators = IndikatorKpi::where('status', 'Aktif')->get();
-        return view('admin.bobot.edit', compact('bobot', 'indikators'));
+        
+        // Indikator: Diri sendiri + yang belum punya bobot
+        $indikators = IndikatorKpi::where('status', true)
+                        ->where(function($q) use ($bobot) {
+                            $q->whereDoesntHave('bobot')
+                              ->orWhere('id_indikator', $bobot->id_indikator);
+                        })->get();
+
+        // Hitung Penggunaan Bobot (Kecuali bobot ini sendiri, agar saat edit tidak dobel hitung)
+        $divisiUsage = $this->getDivisiUsage($bobot->id_bobot);
+
+        return view('admin.bobot.edit', compact('bobot', 'indikators', 'divisiUsage'));
     }
 
     public function update(Request $request, string $id)
     {
+        $bobot = BobotKpi::findOrFail($id);
+
         $request->validate([
-            'id_indikator' => 'required|exists:indikator_kpis,id_indikator',
+            'id_indikator' => 'required|exists:indikator_kpis,id_indikator|unique:bobot_kpis,id_indikator,'.$id.',id_bobot',
             'nilai_bobot'  => 'required|integer|min:1|max:100',
-            'status'       => ['required', 'in:Aktif,Nonaktif'],
         ]);
 
-        $bobot = BobotKpi::findOrFail($id);
+        // Validasi Backend
+        $errorMsg = $this->validateTotalBobot($request->id_indikator, $request->nilai_bobot, $bobot->id_bobot);
+        if ($errorMsg) {
+            return redirect()->back()->withInput()->with('error', $errorMsg);
+        }
+
         $bobot->update([
             'id_indikator' => $request->id_indikator,
             'nilai_bobot'  => $request->nilai_bobot,
-            'status'       => $request->status,
         ]);
 
         return redirect()->route('bobot.index')->with('success', 'Bobot berhasil diperbarui!');
@@ -112,5 +122,64 @@ class BobotKpiController extends Controller
         $bobot->delete();
         
         return redirect()->route('bobot.index')->with('success', 'Bobot berhasil dihapus!');
+    }
+
+    // --- HELPER FUNCTIONS ---
+
+    /**
+     * Mengambil data pemakaian bobot per divisi
+     * Return format: [ id_divisi => ['nama' => 'IT', 'used' => 80, 'sisa' => 20] ]
+     */
+    private function getDivisiUsage($excludeBobotId = null)
+    {
+        $divisis = Divisi::where('status', true)->get();
+        $usageData = [];
+
+        foreach ($divisis as $divisi) {
+            // Cari Indikator yang punya target ke divisi ini
+            $totalUsed = BobotKpi::whereHas('indikator', function($q) use ($divisi) {
+                // target_divisi disimpan sebagai JSON array ["1", "2"]
+                // Kita cari yang mengandung ID divisi ini
+                $q->whereJsonContains('target_divisi', (string)$divisi->id_divisi);
+            })
+            ->when($excludeBobotId, function($q) use ($excludeBobotId) {
+                $q->where('id_bobot', '!=', $excludeBobotId);
+            })
+            ->sum('nilai_bobot');
+
+            $usageData[$divisi->id_divisi] = [
+                'nama' => $divisi->nama_divisi,
+                'used' => (int)$totalUsed,
+                'sisa' => 100 - (int)$totalUsed
+            ];
+        }
+
+        return $usageData;
+    }
+
+    private function validateTotalBobot($idIndikatorBaru, $nilaiBobotBaru, $excludeBobotId = null)
+    {
+        $indikatorBaru = IndikatorKpi::findOrFail($idIndikatorBaru);
+        $targetDivisiArr = $indikatorBaru->target_divisi ?? []; 
+
+        if (empty($targetDivisiArr)) return null;
+
+        foreach ($targetDivisiArr as $divisiIdStr) {
+            $totalBobotExisting = BobotKpi::whereHas('indikator', function($q) use ($divisiIdStr) {
+                $q->whereJsonContains('target_divisi', $divisiIdStr);
+            })
+            ->when($excludeBobotId, function($q) use ($excludeBobotId) {
+                $q->where('id_bobot', '!=', $excludeBobotId);
+            })
+            ->sum('nilai_bobot');
+
+            $totalProyeksi = $totalBobotExisting + $nilaiBobotBaru;
+
+            if ($totalProyeksi > 100) {
+                $namaDivisi = Divisi::find($divisiIdStr)->nama_divisi ?? 'Divisi ID '.$divisiIdStr;
+                return "Gagal! Total bobot untuk **$namaDivisi** akan menjadi {$totalProyeksi}%. Maksimal 100%. (Sisa kuota: " . (100 - $totalBobotExisting) . "%)";
+            }
+        }
+        return null; 
     }
 }

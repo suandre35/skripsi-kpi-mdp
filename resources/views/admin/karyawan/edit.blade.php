@@ -42,8 +42,8 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Perbarui informasi lengkap karyawan.</p>
                     </div>
                     {{-- Status Badge --}}
-                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $karyawan->status_karyawan == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $karyawan->status_karyawan }}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $karyawan->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        {{ $karyawan->status ? 'Aktif' : 'Nonaktif' }}
                     </span>
                 </div>
 
@@ -222,9 +222,9 @@
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Karyawan</label>
                                         <div class="relative">
-                                            <select name="status_karyawan" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                                <option value="Aktif" {{ old('status_karyawan', $karyawan->status_karyawan) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                                <option value="Nonaktif" {{ old('status_karyawan', $karyawan->status_karyawan) == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                                            <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                                <option value="1" {{ old('status', $karyawan->status) == true ? 'selected' : '' }}>Aktif</option>
+                                                <option value="0" {{ old('status', $karyawan->status) == false ? 'selected' : '' }}>Nonaktif</option>
                                             </select>
                                         </div>
                                     </div>

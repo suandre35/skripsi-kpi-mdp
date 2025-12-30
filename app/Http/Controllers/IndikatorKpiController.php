@@ -41,8 +41,8 @@ class IndikatorKpiController extends Controller
         // Mapping ID Divisi ke Nama: [1 => 'IT', 2 => 'HRD'] agar query ringan di view
         $allDivisi = Divisi::pluck('nama_divisi', 'id_divisi')->toArray();
         
-        // List Kategori untuk Dropdown Filter
-        $kategoris = KategoriKpi::where('status', 'Aktif')->get();
+        // List Kategori untuk Dropdown Filter (Ambil semua biar filter history tetap jalan)
+        $kategoris = KategoriKpi::where('status', true)->orderBy('nama_kategori', 'asc')->get();
 
         return view('admin.indikator.index', compact('indikators', 'allDivisi', 'kategoris'));
     }
@@ -52,8 +52,9 @@ class IndikatorKpiController extends Controller
      */
     public function create()
     {
-        $kategoris = KategoriKpi::where('status', 'Aktif')->get();
-        $divisis = Divisi::where('status', 'Aktif')->get();
+        // Hanya ambil yang Aktif untuk form input
+        $kategoris = KategoriKpi::where('status', true)->orderBy('nama_kategori', 'asc')->get();
+        $divisis = Divisi::where('status', true)->orderBy('nama_divisi', 'asc')->get();
         
         return view('admin.indikator.create', compact('kategoris', 'divisis'));
     }
@@ -64,17 +65,17 @@ class IndikatorKpiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'id_kategori'   => 'required|exists:kategori_kpis,id_kategori',
-            'target_divisi'     => 'required|array',
-            'target_divisi.*'   => 'exists:divisis,id_divisi',
-            'nama_indikator'        => 'required|string|max:150',
-            'satuan_pengukuran'     => 'nullable|string|max:50', // Contoh: %, Poin, Kali
-            'deskripsi'     => 'nullable|string',
+            'id_kategori'       => 'required|exists:kategori_kpis,id_kategori',
+            'target_divisi'     => 'required|array', // Wajib array
+            'target_divisi.*'   => 'exists:divisis,id_divisi', // Tiap item harus valid
+            'nama_indikator'    => 'required|string|max:150',
+            'satuan_pengukuran' => 'nullable|string|max:50',
+            'deskripsi'         => 'nullable|string',
+            'status'            => 'required|boolean',
         ]);
 
-        // IndikatorKpi::create($request->all());
+        // Auto set status Aktif saat create
         $data = $request->all();
-        $data['status'] = 'Aktif';
 
         IndikatorKpi::create($data);
 
@@ -95,8 +96,11 @@ class IndikatorKpiController extends Controller
     public function edit(string $id)
     {
         $indikator = IndikatorKpi::findOrFail($id);
-        $kategoris = KategoriKpi::where('status', 'Aktif')->get();
-        $divisis = Divisi::where('status', 'Aktif')->get();
+        
+        // Ambil semua kategori/divisi (termasuk nonaktif) jaga-jaga kalau data lama merujuk kesana
+        // Atau ambil yang aktif saja, terserah kebijakan. Di sini saya ambil semua biar aman saat edit.
+        $kategoris = KategoriKpi::where('status', true)->orderBy('nama_kategori', 'asc')->get();
+        $divisis = Divisi::where('status', true)->orderBy('nama_divisi', 'asc')->get();
 
         return view('admin.indikator.edit', compact('indikator', 'kategoris','divisis'));
     }
@@ -113,7 +117,7 @@ class IndikatorKpiController extends Controller
             'nama_indikator'    => 'required|string|max:150',
             'satuan_pengukuran' => 'nullable|string|max:50',
             'deskripsi'         => 'nullable|string',
-            'status'            => ['required', 'in:Aktif,Nonaktif'], // Pakai array biar aman
+            'status'            => 'required|boolean', // Validasi Status
         ]);
 
         $indikator = IndikatorKpi::findOrFail($id);
@@ -127,6 +131,7 @@ class IndikatorKpiController extends Controller
      */
     public function destroy(string $id)
     {
+        // Fitur delete dinonaktifkan agar riwayat terjaga, sarankan Nonaktif saja.
         return redirect()->back()->with('error', 'Indikator tidak boleh dihapus demi riwayat penilaian. Gunakan status Nonaktif.');
     }
 }

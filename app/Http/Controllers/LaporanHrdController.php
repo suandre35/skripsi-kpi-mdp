@@ -9,6 +9,7 @@ use App\Models\PeriodeEvaluasi;
 use App\Models\PenilaianHeader;
 use App\Models\PenilaianDetail;
 use App\Models\KategoriKpi;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class LaporanHrdController extends Controller
 {
@@ -17,24 +18,31 @@ class LaporanHrdController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Filter Dropdown
-        $divisis = Divisi::where('status', 'Aktif')->get();
+        // 1. Filter Dropdown (Ambil divisi aktif - boolean true)
+        $divisis = Divisi::where('status', true)->get();
         $periodes = PeriodeEvaluasi::all();
         
-        // Default: Periode Aktif
-        $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        // Default: Periode Aktif (boolean true)
+        $periodeAktif = PeriodeEvaluasi::where('status', true)->first();
         $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
         $selectedDivisi = $request->id_divisi ?? null;
 
-        // 2. Query Karyawan (Sesuai Filter)
-        $query = Karyawan::with('divisi')->where('status_karyawan', 'Aktif');
+        // 2. Query Dasar Karyawan Aktif
+        $query = Karyawan::with('divisi')->where('status', true);
+
+        // --- FILTER KHUSUS ROLE 'KARYAWAN' ---
+        // (Sama seperti logic Ranking: Exclude Manajer & HRD)
+        $query->whereHas('user', function($q) {
+            $q->where('role', 'Karyawan'); 
+        });
+        // -------------------------------------
 
         // Filter Divisi
         if ($selectedDivisi) {
             $query->where('id_divisi', $selectedDivisi);
         }
 
-        // --- TAMBAHAN: LOGIKA SEARCH ---
+        // Logika Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -42,14 +50,13 @@ class LaporanHrdController extends Controller
                   ->orWhere('nik', 'LIKE', "%{$search}%");
             });
         }
-        // -------------------------------
 
-        // Kecuali Admin/HRD sendiri (opsional)
-        // $query->where('role', '!=', 'HRD'); 
+        // 3. Pagination & Execution
+        $karyawans = $query->orderBy('nama_lengkap', 'asc')
+                           ->paginate(10)
+                           ->withQueryString();
 
-        $karyawans = $query->get();
-
-        // 3. Hitung Skor Real-time untuk setiap karyawan
+        // 4. Hitung Skor Real-time untuk setiap karyawan (Hanya yang di halaman ini)
         foreach ($karyawans as $karyawan) {
             if ($selectedPeriode) {
                 $karyawan->skor_saat_ini = $this->hitungSkor($karyawan->id_karyawan, $selectedPeriode, $karyawan->id_divisi);
@@ -60,8 +67,6 @@ class LaporanHrdController extends Controller
 
         return view('admin.laporan.index', compact('karyawans', 'divisis', 'periodes', 'selectedPeriode', 'selectedDivisi'));
     }
-
-    // ... (Sisa method show, hitungSkor, getDetailSkor, ranking TETAP SAMA seperti kode Anda) ...
     
     public function show($id_karyawan, $id_periode)
     {
@@ -85,9 +90,10 @@ class LaporanHrdController extends Controller
                                  ->where('id_periode', $idPeriode)
                                  ->first();
 
+        // Ambil Indikator Aktif (boolean true)
         $allIndikators = KategoriKpi::with(['indikators' => function($q) {
-            $q->where('status', 'Aktif')->with(['target', 'bobot']);
-        }])->where('status', 'Aktif')->get();
+            $q->where('status', true)->with(['target', 'bobot']);
+        }])->where('status', true)->get();
 
         $totalSkorAkhir = 0;
         $detail = [];
@@ -128,45 +134,59 @@ class LaporanHrdController extends Controller
         return ['total_skor_akhir' => $totalSkorAkhir, 'detail' => $detail];
     }
 
+    /**
+     * HALAMAN RANKING (PERBANDINGAN) DENGAN PAGINATION
+     */
     public function ranking(Request $request)
     {
-        // 1. Ambil Data Filter (Periode & Divisi)
         $periodes = PeriodeEvaluasi::all();
-        $divisis = Divisi::where('status', 'Aktif')->get(); // TAMBAHAN: Ambil data divisi
+        $divisis = Divisi::where('status', true)->get(); // status -> boolean
 
-        // 2. Set Default Value
-        $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        $periodeAktif = PeriodeEvaluasi::where('status', true)->first(); // status -> boolean
         $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
-        $selectedDivisi = $request->id_divisi ?? null; // TAMBAHAN: Tangkap input divisi
+        $selectedDivisi = $request->id_divisi ?? null;
 
-        // 3. Query Karyawan
-        $query = Karyawan::with('divisi')->where('status_karyawan', 'Aktif');
+        // Query Dasar Karyawan Aktif
+        // PERBAIKAN: Ganti 'status_karyawan', 'Aktif' menjadi 'status', true
+        $query = Karyawan::with('divisi')->where('status', true);
 
-        // TAMBAHAN: Filter berdasarkan Divisi jika ada input
+        // Filter Role Karyawan Only
+        $query->whereHas('user', function($q) {
+            $q->where('role', 'Karyawan'); 
+        });
+
         if ($selectedDivisi) {
             $query->where('id_divisi', $selectedDivisi);
         }
 
         $karyawans = $query->get();
 
-        // 4. Hitung Skor & Masukkan ke Collection
-        $ranking = $karyawans->map(function($karyawan) use ($selectedPeriode) {
-            // Hitung skor hanya jika ada periode yang dipilih
+        // Hitung Skor & Mapping Data
+        $rankingCollection = $karyawans->map(function($karyawan) use ($selectedPeriode) {
             $skor = $selectedPeriode ? $this->hitungSkor($karyawan->id_karyawan, $selectedPeriode, $karyawan->id_divisi) : 0;
             
             return [
                 'nama' => $karyawan->nama_lengkap,
-                'divisi' => $karyawan->divisi->nama_divisi,
+                'nik' => $karyawan->nik,
+                'divisi' => $karyawan->divisi->nama_divisi ?? '-',
                 'skor' => $skor,
-                // Tentukan Grade
                 'grade' => $skor >= 90 ? 'A' : ($skor >= 80 ? 'B' : ($skor >= 70 ? 'C' : ($skor >= 60 ? 'D' : 'E')))
             ];
         });
 
-        // 5. Urutkan dari Skor Tertinggi (Desc)
-        $ranking = $ranking->sortByDesc('skor')->values();
+        // Urutkan dari Skor Tertinggi
+        $sortedRanking = $rankingCollection->sortByDesc('skor')->values();
 
-        // Kirim $divisis dan $selectedDivisi ke View
+        // --- MANUAL PAGINATION ---
+        $perPage = 10; 
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $sortedRanking->slice(($currentPage - 1) * $perPage, $perPage)->all();
+
+        $ranking = new LengthAwarePaginator($currentItems, $sortedRanking->count(), $perPage, $currentPage, [
+            'path' => LengthAwarePaginator::resolveCurrentPath(),
+            'query' => $request->query(),
+        ]);
+
         return view('admin.laporan.ranking', compact('ranking', 'periodes', 'divisis', 'selectedPeriode', 'selectedDivisi'));
     }
 }

@@ -14,7 +14,7 @@ class PeriodeEvaluasiController extends Controller
     {
         $periodes = PeriodeEvaluasi::orderBy('created_at', 'desc')->paginate(10);
 
-        $periodeAktif = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        $periodeAktif = PeriodeEvaluasi::where('status', true)->first();
 
         return view('admin.periode.index', compact('periodes', 'periodeAktif'));
     }
@@ -36,12 +36,13 @@ class PeriodeEvaluasiController extends Controller
             'nama_periode'       => 'required|string|max:100',
             'tanggal_mulai'      => 'required|date',
             'tanggal_selesai'    => 'required|date|after:tanggal_mulai',
-            'tanggal_pengumuman' => 'required|date|after:tanggal_selesai',
-            'status'             => 'required|in:Aktif,Nonaktif',
+            'pengumuman'         => 'required|boolean',
+            'status'             => 'required|boolean',
         ]);
 
-        if ($request->status == 'Aktif') {
-            PeriodeEvaluasi::where('status', 'Aktif')->update(['status' => 'Nonaktif']);
+        // Jika status yang diinput adalah TRUE (Aktif), nonaktifkan yang lain
+        if ($request->status) { 
+            PeriodeEvaluasi::where('status', true)->update(['status' => false]);
         }
 
         PeriodeEvaluasi::create($validated);
@@ -75,16 +76,15 @@ class PeriodeEvaluasiController extends Controller
             'nama_periode'       => 'required|string|max:100',
             'tanggal_mulai'      => 'required|date',
             'tanggal_selesai'    => 'required|date|after:tanggal_mulai',
-            'tanggal_pengumuman' => 'required|date|after:tanggal_selesai',
-            'status'             => 'required|in:Aktif,Nonaktif',
+            'pengumuman'         => 'required|boolean',
+            'status'             => 'required|boolean',
         ]);
 
-        if ($request->status == 'Aktif') {
-            PeriodeEvaluasi::where('id_periode', '!=', $id)->update(['status' => 'Nonaktif']);
+        if ($request->status) {
+            PeriodeEvaluasi::where('id_periode', '!=', $id)->update(['status' => false]);
         }
 
         $periode = PeriodeEvaluasi::findOrFail($id);
-        
         $periode->update($validated);
 
         return redirect()->route('periode.index')->with('success', 'Periode Evaluasi berhasil diperbarui!');

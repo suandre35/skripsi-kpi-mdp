@@ -66,8 +66,8 @@
                             <div class="relative">
                                 <select name="status" onchange="this.form.submit()" class="block w-full md:w-40 pl-3 pr-10 py-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white cursor-pointer">
                                     <option value="">Semua Status</option>
-                                    <option value="Aktif" {{ request('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                    <option value="Nonaktif" {{ request('status') == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                                    <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Aktif</option>
+                                    <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Nonaktif</option>
                                 </select>
                             </div>
                             
@@ -131,9 +131,10 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <div class="h-2.5 w-2.5 rounded-full mr-2 {{ $user->status == 'Aktif' ? 'bg-green-500 animate-pulse' : 'bg-red-500' }}"></div>
-                                        <span class="text-sm font-medium {{ $user->status == 'Aktif' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                                            {{ $user->status }}
+                                        {{-- Cek Boolean Status --}}
+                                        <div class="h-2.5 w-2.5 rounded-full mr-2 {{ $user->status ? 'bg-green-500 animate-pulse' : 'bg-red-500' }}"></div>
+                                        <span class="text-sm font-medium {{ $user->status ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                            {{ $user->status ? 'Aktif' : 'Nonaktif' }}
                                         </span>
                                     </div>
                                 </td>

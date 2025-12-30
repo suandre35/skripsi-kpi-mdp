@@ -15,7 +15,6 @@ class TargetKpi extends Model
         'id_indikator',
         'nilai_target',
         'jenis_target',
-        'status',
     ];
 
     public function indikator()

@@ -58,6 +58,16 @@
                         </div>
                     @endif
 
+                    @if(session('error'))
+                        <div class="mb-6 p-4 rounded-lg bg-red-100 border-l-4 border-red-500 text-red-700">
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                <span class="font-bold">Validasi Gagal!</span>
+                            </div>
+                            <p class="mt-1 ml-8">{!! \Illuminate\Support\Str::markdown(session('error')) !!}</p>
+                        </div>
+                    @endif
+
                     <form action="{{ route('bobot.store') }}" method="POST">
                         @csrf
                         
@@ -84,44 +94,43 @@
                                 @endif
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {{-- Nilai Bobot --}}
+                            {{-- Grid Nilai & Info Sisa Bobot --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                                
+                                {{-- KIRI: Input Nilai --}}
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nilai Bobot (%) <span class="text-red-500">*</span></label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            {{-- Icon Percent --}}
                                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
                                         </div>
-                                        <input type="number" step="0.01" name="nilai_bobot" value="{{ old('nilai_bobot') }}" required placeholder="Contoh: 15"
+                                        <input type="number" step="1" name="nilai_bobot" id="nilai_bobot" value="{{ old('nilai_bobot') }}" required placeholder="Contoh: 15"
                                             class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500">Total bobot dalam satu kategori idealnya 100%.</p>
+                                    <p class="mt-2 text-xs text-gray-500">Pastikan total bobot per divisi tidak melebihi 100%.</p>
                                 </div>
 
-                                {{-- Status --}}
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                                    <div class="relative">
-                                        <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                            <option value="Aktif">Aktif</option>
-                                            <option value="Nonaktif">Nonaktif</option>
-                                        </select>
+                                {{-- KANAN: Info Sisa Bobot (Dinamis) --}}
+                                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 border border-blue-100 dark:border-blue-800">
+                                    <h4 class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Informasi Kuota Bobot Divisi
+                                    </h4>
+                                    
+                                    {{-- Container untuk list dinamis --}}
+                                    <div id="divisi-info-container" class="space-y-3">
+                                        <p class="text-xs text-gray-500 italic">Pilih indikator terlebih dahulu untuk melihat sisa kuota divisi terkait.</p>
                                     </div>
                                 </div>
+
                             </div>
 
                         </div>
 
-                        {{-- FOOTER BUTTONS --}}
+                        {{-- Footer Buttons --}}
                         <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
-                            <a href="{{ route('bobot.index') }}" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 transition duration-200">
-                                Batal
-                            </a>
-                            <button type="submit" class="flex items-center justify-center gap-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 transition transform hover:-translate-y-0.5 shadow-lg shadow-blue-500/30">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                Simpan Bobot
-                            </button>
+                            <a href="{{ route('bobot.index') }}" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Batal</a>
+                            <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-lg shadow-blue-500/30">Simpan Bobot</button>
                         </div>
 
                     </form>
@@ -129,4 +138,69 @@
             </div>
         </div>
     </div>
+
+    {{-- SCRIPT JAVASCRIPT --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Data dari Controller (Penggunaan Bobot per Divisi)
+            const divisiUsage = @json($divisiUsage); 
+            
+            const selectIndikator = document.getElementById('id_indikator');
+            const infoContainer = document.getElementById('divisi-info-container');
+
+            function updateInfo() {
+                const selectedOption = selectIndikator.options[selectIndikator.selectedIndex];
+                
+                // Ambil data targets (array ID Divisi) dari atribut data-targets
+                let targetDivisiIds = [];
+                try {
+                    targetDivisiIds = JSON.parse(selectedOption.getAttribute('data-targets') || '[]');
+                } catch (e) {
+                    targetDivisiIds = [];
+                }
+
+                infoContainer.innerHTML = ''; // Reset konten
+
+                if (targetDivisiIds.length === 0) {
+                    infoContainer.innerHTML = '<p class="text-xs text-gray-500 italic">Indikator ini tidak terikat khusus pada divisi manapun (Umum) atau belum dipilih.</p>';
+                    return;
+                }
+
+                targetDivisiIds.forEach(id => {
+                    // Cek data usage dari variabel PHP yg di-pass ke JS
+                    if (divisiUsage[id]) {
+                        const data = divisiUsage[id];
+                        const sisa = data.sisa;
+                        
+                        // Tentukan warna progress bar
+                        let colorClass = 'bg-blue-600';
+                        if(sisa < 0) colorClass = 'bg-red-500'; // Over limit
+                        else if(sisa < 20) colorClass = 'bg-yellow-400'; // Warning
+
+                        const html = `
+                            <div class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">${data.nama}</span>
+                                    <span class="text-xs font-bold ${sisa < 0 ? 'text-red-600' : 'text-blue-600'}">Sisa: ${sisa}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                                    <div class="${colorClass} h-1.5 rounded-full" style="width: ${Math.min(data.used, 100)}%"></div>
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1 text-right">Terpakai: ${data.used}%</div>
+                            </div>
+                        `;
+                        infoContainer.insertAdjacentHTML('beforeend', html);
+                    }
+                });
+            }
+
+            // Listen event change
+            selectIndikator.addEventListener('change', updateInfo);
+
+            // Jalankan sekali saat load (jika old input ada)
+            if(selectIndikator.value) {
+                updateInfo();
+            }
+        });
+    </script>
 </x-app-layout>

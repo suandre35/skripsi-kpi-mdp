@@ -42,8 +42,8 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Perbarui informasi dan hak akses pengguna.</p>
                     </div>
                     {{-- Status Badge Kecil di Header --}}
-                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $user->status == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $user->status }}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $user->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        {{ $user->status ? 'Aktif' : 'Nonaktif' }}
                     </span>
                 </div>
 
@@ -157,8 +157,8 @@
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Akun</label>
                                         <div class="relative">
                                             <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                                <option value="Aktif" {{ $user->status == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                                <option value="Nonaktif" {{ $user->status == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                                                <option value="1" {{ old('status', $user->status) == true ? 'selected' : '' }}>Aktif</option>
+                                                <option value="0" {{ old('status', $user->status) == false ? 'selected' : '' }}>Nonaktif</option>
                                             </select>
                                         </div>
                                     </div>

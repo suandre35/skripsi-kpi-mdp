@@ -35,7 +35,7 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
-        // 3. Logika Filter Status
+        // 3. Filter Status (Boolean)
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -60,7 +60,7 @@ class UserController extends Controller
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role'     => ['required', 'in:HRD,Manajer,Karyawan'],
-            'status'   => ['required', 'in:Aktif,Nonaktif'],
+            'status'   => ['required', 'boolean'],
         ]);
 
         User::create([
@@ -99,7 +99,7 @@ class UserController extends Controller
             'name'   => ['required', 'string', 'max:255'],
             'email'  => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id_user.',id_user'],
             'role'   => ['required', 'in:HRD,Manajer,Karyawan'],
-            'status' => ['required', 'in:Aktif,Nonaktif'],
+            'status' => ['required', 'boolean'],
         ]);
 
         $user->name   = $request->name;

@@ -41,10 +41,6 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Edit Target: <span class="font-bold text-blue-600">{{ $target->indikator->nama_indikator ?? 'Indikator Terhapus' }}</span></h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Perbarui nilai target yang harus dicapai.</p>
                     </div>
-                    {{-- Status Badge --}}
-                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $target->status == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $target->status }}
-                    </span>
                 </div>
 
                 <div class="p-6 md:p-8">
@@ -113,17 +109,6 @@
                                         <input type="text" name="jenis_target" value="{{ old('jenis_target', $target->jenis_target) }}" placeholder="Contoh: Rupiah, %"
                                             class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
                                     </div>
-                                </div>
-                            </div>
-
-                            {{-- Status --}}
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Target</label>
-                                <div class="relative">
-                                    <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                        <option value="Aktif" {{ old('status', $target->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                        <option value="Nonaktif" {{ old('status', $target->status) == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                                    </select>
                                 </div>
                             </div>
 

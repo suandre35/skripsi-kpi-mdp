@@ -42,8 +42,8 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Perbarui detail waktu evaluasi.</p>
                     </div>
                     {{-- Status Badge --}}
-                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $periode->status == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $periode->status }}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $periode->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        {{ $periode->status ? 'Aktif' : 'Nonaktif' }}
                     </span>
                 </div>
 
@@ -70,7 +70,7 @@
                         
                         <div class="space-y-6">
                             
-                            {{-- Nama Periode --}}
+                            {{-- ROW 1: Nama Periode --}}
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Periode <span class="text-red-500">*</span></label>
                                 <div class="relative">
@@ -82,8 +82,8 @@
                                 </div>
                             </div>
 
-                            {{-- Grid Tanggal --}}
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {{-- ROW 2: Tanggal Mulai & Selesai --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 
                                 {{-- Mulai --}}
                                 <div>
@@ -112,30 +112,42 @@
                                             class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
                                     </div>
                                 </div>
-
-                                {{-- Pengumuman --}}
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Waktu Pengumuman</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
-                                        </div>
-                                        <input type="datetime-local" name="tanggal_pengumuman" 
-                                            value="{{ old('tanggal_pengumuman', $periode->tanggal_pengumuman ? \Carbon\Carbon::parse($periode->tanggal_pengumuman)->format('Y-m-d\TH:i') : '') }}" 
-                                            required
-                                            class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                    </div>
-                                </div>
                             </div>
 
-                            {{-- Status --}}
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Periode</label>
-                                <div class="relative">
-                                    <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                        <option value="Nonaktif" {{ old('status', $periode->status) == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                                        <option value="Aktif" {{ old('status', $periode->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                    </select>
+                            {{-- ROW 3: Akses Rapor & Status --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                
+                                {{-- Pengumuman --}}
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Akses Rapor Karyawan</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        </div>
+                                        <select name="pengumuman" class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150 cursor-pointer">
+                                            <option value="0" {{ old('pengumuman', $periode->pengumuman) == 0 ? 'selected' : '' }}>Tertutup (Disembunyikan)</option>
+                                            <option value="1" {{ old('pengumuman', $periode->pengumuman) == 1 ? 'selected' : '' }}>Terbuka (Dapat Dilihat)</option>
+                                        </select>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Atur kapan karyawan bisa melihat hasil rapor.</p>
+                                </div>
+
+                                {{-- Status --}}
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Periode</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </div>
+                                        <select name="status" class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150 cursor-pointer">
+                                            <option value="0" {{ old('status', $periode->status) == 0 ? 'selected' : '' }}>Nonaktif</option>
+                                            <option value="1" {{ old('status', $periode->status) == 1 ? 'selected' : '' }}>Aktif</option>
+                                        </select>
+                                    </div>
+                                    <p class="mt-1 text-xs text-blue-500 flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Mengaktifkan ini akan menonaktifkan periode lain.
+                                    </p>
                                 </div>
                             </div>
 

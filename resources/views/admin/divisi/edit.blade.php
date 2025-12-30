@@ -114,13 +114,11 @@
 
                                     {{-- Status --}}
                                     <div>
-                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Divisi</label>
-                                        <div class="relative">
-                                            <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                                <option value="Aktif" {{ old('status', $divisi->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                                <option value="Nonaktif" {{ old('status', $divisi->status) == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                                            </select>
-                                        </div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                                        <select name="status" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                            <option value="1" {{ old('status', $divisi->status) == true ? 'selected' : '' }}>Aktif</option>
+                                            <option value="0" {{ old('status', $divisi->status) == false ? 'selected' : '' }}>Nonaktif</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>

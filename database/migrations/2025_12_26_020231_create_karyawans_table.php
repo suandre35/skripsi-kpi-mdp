@@ -17,12 +17,12 @@ return new class extends Migration
             $table->foreignId('id_divisi')->nullable()->constrained('divisis', 'id_divisi')->onDelete('set null');
             $table->string('nik')->unique();
             $table->string('nama_lengkap');
-            $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
-            $table->date('tanggal_lahir')->nullable();
-            $table->text('alamat')->nullable();
+            $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->date('tanggal_lahir');
+            $table->text('alamat');
             $table->string('foto')->nullable();
-            $table->date('tanggal_masuk')->nullable();
-            $table->enum('status_karyawan', ['Aktif', 'Nonaktif'])->default('Aktif');
+            $table->date('tanggal_masuk');
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

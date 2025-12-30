@@ -86,6 +86,15 @@
                                 </div>
                             </div>
 
+                            {{-- Status Boolean --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                                <select name="status" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    <option value="1">Aktif</option>
+                                    <option value="0">Nonaktif</option>
+                                </select>
+                            </div>
+
                         </div>
 
                         {{-- FOOTER BUTTONS --}}

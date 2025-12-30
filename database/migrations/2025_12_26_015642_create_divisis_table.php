@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nama_divisi');
             $table->text('deskripsi')->nullable();
             $table->foreignId('id_manajer')->nullable()->constrained('users', 'id_user')->onDelete('set null');
-            $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

@@ -144,8 +144,8 @@
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Akun</label>
                                         <div class="relative">
                                             <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                                <option value="Aktif">Aktif</option>
-                                                <option value="Nonaktif">Nonaktif</option>
+                                                <option value="1">Aktif</option>
+                                                <option value="0">Nonaktif</option>
                                             </select>
                                         </div>
                                         <p class="mt-1 text-xs text-gray-500">User nonaktif tidak akan bisa login ke sistem.</p>

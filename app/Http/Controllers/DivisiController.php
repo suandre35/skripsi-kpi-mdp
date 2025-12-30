@@ -39,7 +39,7 @@ class DivisiController extends Controller
      */
     public function create()
     {
-        $manajers = User::where('role', 'Manajer')->where('status', 'Aktif')->get();
+        $manajers = User::where('role', 'Manajer')->where('status', true)->get();
                         
         return view('admin.divisi.create', compact('manajers'));
     }
@@ -52,7 +52,7 @@ class DivisiController extends Controller
         $request->validate([
             'nama_divisi' => 'required|string|max:100|unique:divisis,nama_divisi',
             'id_manajer'  => 'required|exists:users,id_user',
-            'status'      => 'required|in:Aktif,Nonaktif',
+            'status'      => 'required|boolean',
         ]);
 
         Divisi::create($request->all());
@@ -74,8 +74,7 @@ class DivisiController extends Controller
     public function edit(string $id)
     {
         $divisi = Divisi::findOrFail($id);
-        
-        $manajers = User::where('role', 'Manajer')->where('status', 'Aktif')->get();
+        $manajers = User::where('role', 'Manajer')->where('status', true)->get();
 
         return view('admin.divisi.edit', compact('divisi', 'manajers'));
     }
@@ -90,7 +89,7 @@ class DivisiController extends Controller
         $request->validate([
             'nama_divisi' => 'required|string|max:100|unique:divisis,nama_divisi,'.$divisi->id_divisi.',id_divisi',
             'id_manajer'  => 'required|exists:users,id_user',
-            'status'      => 'required|in:Aktif,Nonaktif',
+            'status'      => 'required|boolean',
         ]);
 
         $divisi->update($request->all());
@@ -103,6 +102,15 @@ class DivisiController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->back()->with('error', 'Fitur hapus dinonaktifkan. Silakan ubah status menjadi Nonaktif.');
+        $divisi = Divisi::findOrFail($id);
+        
+        // Cek apakah divisi masih punya karyawan
+        if ($divisi->karyawans()->count() > 0) {
+            return back()->with('error', 'Tidak bisa menghapus divisi yang masih memiliki karyawan aktif.');
+        }
+
+        $divisi->delete();
+
+        return redirect()->route('divisi.index')->with('success', 'Divisi berhasil dihapus!');
     }
 }

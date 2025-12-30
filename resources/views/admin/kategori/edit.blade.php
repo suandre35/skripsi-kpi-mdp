@@ -94,14 +94,11 @@
 
                             {{-- Status --}}
                             <div>
-                                <label for="status" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                                <div class="relative">
-                                    <select name="status" id="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                        <option value="Aktif" {{ old('status', $kategori->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                        <option value="Nonaktif" {{ old('status', $kategori->status) == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                                    </select>
-                                </div>
-                                <p class="mt-1 text-xs text-gray-500">Kategori nonaktif tidak bisa dipilih saat input KPI baru.</p>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                                <select name="status" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    <option value="1" {{ old('status', $kategori->status) == true ? 'selected' : '' }}>Aktif</option>
+                                    <option value="0" {{ old('status', $kategori->status) == false ? 'selected' : '' }}>Nonaktif</option>
+                                </select>
                             </div>
 
                         </div>

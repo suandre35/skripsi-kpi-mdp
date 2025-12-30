@@ -14,7 +14,6 @@ class BobotKpi extends Model
     protected $fillable = [
         'id_indikator',
         'nilai_bobot',
-        'status',
     ];
 
     // Relasi ke Indikator

@@ -48,14 +48,11 @@ class KategoriKpiController extends Controller
     {
         $request->validate([
             'nama_kategori' => 'required|string|max:100',
-            'deskripsi' => 'nullable|string',
+            'deskripsi'     => 'nullable|string',
+            'status'        => 'required|boolean',
         ]);
 
-        KategoriKpi::create([
-            'nama_kategori' => $request->nama_kategori,
-            'deskripsi' => $request->deskripsi,
-            'status' => 'Aktif'
-        ]);
+        KategoriKpi::create($request->all());
 
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambahkan!');
     }
@@ -83,18 +80,15 @@ class KategoriKpiController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $kategori = KategoriKpi::findOrFail($id);
+
         $request->validate([
             'nama_kategori' => 'required|string|max:100',
             'deskripsi' => 'nullable|string',
-            'status' => 'required|in:Aktif,Nonaktif',
+            'status'        => 'required|boolean',
         ]);
 
-        $kategori = KategoriKpi::findOrFail($id);
-        $kategori->update([
-            'nama_kategori' => $request->nama_kategori,
-            'deskripsi' => $request->deskripsi,
-            'status' => $request->status,
-        ]);
+        $kategori->update($request->all());
 
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui!');
     }
@@ -104,6 +98,15 @@ class KategoriKpiController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->back()->with('error', 'Indikator tidak boleh dihapus demi riwayat penilaian. Gunakan status Nonaktif.');
+        $kategori = KategoriKpi::findOrFail($id);
+
+        // Cek apakah kategori masih dipakai di indikator
+        if ($kategori->indikators()->count() > 0) {
+            return back()->with('error', 'Kategori tidak bisa dihapus karena masih digunakan oleh Indikator KPI.');
+        }
+
+        $kategori->delete();
+
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus!');
     }
 }

@@ -15,13 +15,14 @@ class PeriodeEvaluasi extends Model
         'nama_periode', 
         'tanggal_mulai',
         'tanggal_selesai',
-        'tanggal_pengumuman',
+        'pengumuman',
         'status',
     ];
     
     protected $casts = [
         'tanggal_mulai'      => 'datetime',
         'tanggal_selesai'    => 'datetime',
-        'tanggal_pengumuman' => 'datetime',
+        'pengumuman'         => 'boolean',
+        'status'             => 'boolean',
     ];
 }

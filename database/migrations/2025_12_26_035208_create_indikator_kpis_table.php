@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('nama_indikator');
             $table->text('deskripsi')->nullable();
             $table->string('satuan_pengukuran')->nullable();
-            $table->enum('status', ['Aktif','Nonaktif'])->default('Aktif');
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

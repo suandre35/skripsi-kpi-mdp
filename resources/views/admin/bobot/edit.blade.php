@@ -41,10 +41,6 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Edit Bobot: <span class="font-bold text-blue-600">{{ $bobot->indikator->nama_indikator ?? 'Indikator' }}</span></h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Sesuaikan persentase prioritas indikator.</p>
                     </div>
-                    {{-- Status Badge --}}
-                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $bobot->status == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $bobot->status }}
-                    </span>
                 </div>
 
                 <div class="p-6 md:p-8">
@@ -64,23 +60,29 @@
                         </div>
                     @endif
 
+                    @if(session('error'))
+                        <div class="mb-6 p-4 rounded-lg bg-red-100 border-l-4 border-red-500 text-red-700">
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                <span class="font-bold">Validasi Gagal!</span>
+                            </div>
+                            <p class="mt-1 ml-8">{!! \Illuminate\Support\Str::markdown(session('error')) !!}</p>
+                        </div>
+                    @endif
+
                     <form action="{{ route('bobot.update', $bobot->id_bobot) }}" method="POST">
                         @csrf
                         @method('PUT') {{-- Method PUT untuk Update --}}
                         
-                        <div class="space-y-6">
-                            
+                        <div class="space-y-8">
                             {{-- Pilih Indikator --}}
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pilih Indikator <span class="text-red-500">*</span></label>
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                                    </div>
-                                    <select name="id_indikator" required class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                        <option value="">-- Pilih Indikator KPI --</option>
+                                    <select name="id_indikator" id="id_indikator" required class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 p-2.5">
                                         @foreach($indikators as $indikator)
                                             <option value="{{ $indikator->id_indikator }}" 
+                                                data-targets='{{ json_encode($indikator->target_divisi) }}'
                                                 {{ old('id_indikator', $bobot->id_indikator) == $indikator->id_indikator ? 'selected' : '' }}>
                                                 {{ $indikator->nama_indikator }}
                                             </option>
@@ -89,47 +91,81 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                                 {{-- Nilai Bobot --}}
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nilai Bobot (%) <span class="text-red-500">*</span></label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
-                                        </div>
-                                        <input type="number" step="0.01" name="nilai_bobot" value="{{ old('nilai_bobot', $bobot->nilai_bobot) }}" required 
-                                            class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                    </div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nilai Bobot (%)</label>
+                                    <input type="number" step="1" name="nilai_bobot" value="{{ old('nilai_bobot', $bobot->nilai_bobot) }}" required 
+                                        class="pl-3 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 </div>
 
-                                {{-- Status --}}
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                                    <div class="relative">
-                                        <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                            <option value="Aktif" {{ old('status', $bobot->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                            <option value="Nonaktif" {{ old('status', $bobot->status) == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                                        </select>
-                                    </div>
+                                {{-- Info Sisa Bobot --}}
+                                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 border border-blue-100 dark:border-blue-800">
+                                    <h4 class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-3">Informasi Kuota Bobot Divisi</h4>
+                                    <div id="divisi-info-container" class="space-y-3"></div>
                                 </div>
                             </div>
-
                         </div>
 
-                        {{-- FOOTER BUTTONS --}}
                         <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
-                            <a href="{{ route('bobot.index') }}" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 transition duration-200">
-                                Batal
-                            </a>
-                            <button type="submit" class="flex items-center justify-center gap-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 transition transform hover:-translate-y-0.5 shadow-lg shadow-blue-500/30">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                                Update Bobot
-                            </button>
+                            <a href="{{ route('bobot.index') }}" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg">Batal</a>
+                            <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg">Update Bobot</button>
                         </div>
-
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- SCRIPT SAMA DENGAN CREATE --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const divisiUsage = @json($divisiUsage); // Data usage EXCLUDE bobot ini
+            const selectIndikator = document.getElementById('id_indikator');
+            const infoContainer = document.getElementById('divisi-info-container');
+
+            function updateInfo() {
+                const selectedOption = selectIndikator.options[selectIndikator.selectedIndex];
+                let targetDivisiIds = [];
+                try { targetDivisiIds = JSON.parse(selectedOption.getAttribute('data-targets') || '[]'); } catch (e) { targetDivisiIds = []; }
+
+                infoContainer.innerHTML = '';
+
+                if (targetDivisiIds.length === 0) {
+                    infoContainer.innerHTML = '<p class="text-xs text-gray-500 italic">Indikator umum / belum dipilih.</p>';
+                    return;
+                }
+
+                targetDivisiIds.forEach(id => {
+                    if (divisiUsage[id]) {
+                        const data = divisiUsage[id];
+                        // Sisa saat ini (sebelum bobot baru dimasukkan)
+                        const sisa = data.sisa; 
+                        
+                        let colorClass = 'bg-blue-600';
+                        if(sisa < 0) colorClass = 'bg-red-500';
+
+                        const html = `
+                            <div class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">${data.nama}</span>
+                                    <span class="text-xs font-bold text-blue-600">Sisa Kuota: ${sisa}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                                    <div class="${colorClass} h-1.5 rounded-full" style="width: ${Math.min(data.used, 100)}%"></div>
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1 text-right">
+                                    Terpakai oleh indikator lain: ${data.used}%
+                                </div>
+                            </div>
+                        `;
+                        infoContainer.insertAdjacentHTML('beforeend', html);
+                    }
+                });
+            }
+
+            selectIndikator.addEventListener('change', updateInfo);
+            if(selectIndikator.value) updateInfo();
+        });
+    </script>
 </x-app-layout>

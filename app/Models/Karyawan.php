@@ -16,12 +16,12 @@ class Karyawan extends Model
         'id_divisi',
         'nik',
         'nama_lengkap',
-        'jenis_kelamin', // Baru
-        'tanggal_lahir', // Baru
-        'alamat',        // Baru
-        'foto',          // Baru
+        'jenis_kelamin',
+        'tanggal_lahir', 
+        'alamat', 
+        'foto',
         'tanggal_masuk',
-        'status_karyawan',
+        'status',
     ];
 
     // Relasi: Karyawan milik satu User (Akun Login)

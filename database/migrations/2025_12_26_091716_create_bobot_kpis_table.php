@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id('id_bobot');
             $table->foreignId('id_indikator')->constrained('indikator_kpis', 'id_indikator')->onDelete('cascade');
             $table->integer('nilai_bobot');
-            $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->timestamps();
         });
     }

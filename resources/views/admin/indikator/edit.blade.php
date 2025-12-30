@@ -153,9 +153,13 @@
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
                                         <div class="relative">
-                                            <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                                <option value="Aktif" {{ old('status', $indikator->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                                <option value="Nonaktif" {{ old('status', $indikator->status) == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            </div>
+                                            <select name="status" class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                                {{-- Value 1 = Aktif (True), 0 = Nonaktif (False) --}}
+                                                <option value="1" {{ old('status', $indikator->status) == 1 ? 'selected' : '' }}>Aktif</option>
+                                                <option value="0" {{ old('status', $indikator->status) == 0 ? 'selected' : '' }}>Nonaktif</option>
                                             </select>
                                         </div>
                                     </div>

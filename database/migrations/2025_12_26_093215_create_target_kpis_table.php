@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('id_indikator')->constrained('indikator_kpis', 'id_indikator')->onDelete('cascade');
             $table->decimal('nilai_target', 15, 2);
             $table->string('jenis_target')->nullable();
-            $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->timestamps();
         });
     }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('id_kategori');
             $table->string('nama_kategori');
             $table->text('deskripsi')->nullable();
-            $table->enum('status', ['Aktif','Nonaktif'])->default('aktif');
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

@@ -41,12 +41,7 @@ class TargetKpiController extends Controller
             });
         }
 
-        // 5. Filter Status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // 6. Pagination
+        // 5. Pagination
         $targets = $query->orderBy('id_target', 'desc')
                          ->paginate(10)
                          ->withQueryString();
@@ -62,7 +57,7 @@ class TargetKpiController extends Controller
     
     public function create()
     {
-        $indikators = IndikatorKpi::where('status', 'Aktif')->get();
+        $indikators = IndikatorKpi::where('status', true)->orderBy('nama_indikator', 'asc')->get();
         return view('admin.target.create', compact('indikators'));
     }
 
@@ -70,14 +65,11 @@ class TargetKpiController extends Controller
     {
         $request->validate([
             'id_indikator' => 'required|exists:indikator_kpis,id_indikator',
-            'nilai_target' => 'required|string|max:100',
-            'jenis_target' => 'nullable|string|max:50',
+            'nilai_target' => 'required|numeric|min:0',
+            'jenis_target' => 'required|string|max:50',
         ]);
 
-        $data = $request->all();
-        $data['status'] = 'Aktif';
-
-        TargetKpi::create($data);
+        TargetKpi::create($request->all());
 
         return redirect()->route('target.index')->with('success', 'Target KPI berhasil ditambahkan!');
     }
@@ -85,20 +77,21 @@ class TargetKpiController extends Controller
     public function edit(string $id)
     {
         $target = TargetKpi::findOrFail($id);
-        $indikators = IndikatorKpi::where('status', 'Aktif')->get();
+        $indikators = IndikatorKpi::where('status', true)->orderBy('nama_indikator', 'asc')->get();
+
         return view('admin.target.edit', compact('target', 'indikators'));
     }
 
     public function update(Request $request, string $id)
     {
+        $target = TargetKpi::findOrFail($id);
+
         $request->validate([
             'id_indikator' => 'required|exists:indikator_kpis,id_indikator',
-            'nilai_target' => 'required|string|max:100',
-            'jenis_target' => 'nullable|string|max:50',
-            'status'       => ['required', 'in:Aktif,Nonaktif'],
+            'nilai_target' => 'required|numeric|min:0',
+            'jenis_target' => 'required|string|max:50',
         ]);
 
-        $target = TargetKpi::findOrFail($id);
         $target->update($request->all());
 
         return redirect()->route('target.index')->with('success', 'Target KPI berhasil diperbarui!');

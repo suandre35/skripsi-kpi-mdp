@@ -11,191 +11,121 @@ use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // 1. BERSIHKAN DATABASE (Agar tidak duplikat saat dijalankan ulang)
+        // 1. BERSIHKAN DATABASE
         Schema::disableForeignKeyConstraints();
         Karyawan::truncate();
         Divisi::truncate();
         User::truncate();
         Schema::enableForeignKeyConstraints();
 
-        $passwordDefault = Hash::make('password'); // Password untuk semua akun
+        $passwordDefault = Hash::make('password'); // Password: password
 
         // =====================================================================
-        // BAGIAN 1: LEVEL DIREKSI (PIMPINAN)
-        // =====================================================================
-        
-        // Buat Divisi Khusus Direksi
-        $divDireksi = Divisi::create([
-            'nama_divisi' => 'Direksi',
-            'deskripsi'   => 'Pimpinan Tertinggi Perusahaan',
-            'status'      => 'Aktif',
-        ]);
-
-        // 1.1 Direktur Utama
-        $userDirektur = User::create([
-            'name'     => 'Bapak Direktur',
-            'email'    => 'direktur@kantor.com',
-            'password' => $passwordDefault,
-            'role'     => 'Manajer', // Level tertinggi dianggap Manajer di sistem
-            'status'   => 'Aktif',
-        ]);
-
-        Karyawan::create([
-            'id_user'         => $userDirektur->id_user,
-            'id_divisi'       => $divDireksi->id_divisi,
-            'nik'             => 'DIR-001',
-            'nama_lengkap'    => 'Budi Santoso (Direktur)',
-            'tanggal_masuk'   => '2010-01-01',
-            'status_karyawan' => 'Aktif',
-        ]);
-
-        // Set Kepala Divisi Direksi
-        $divDireksi->update(['id_manajer' => $userDirektur->id_user]);
-
-        // 1.2 Wakil Direktur
-        $userWakil = User::create([
-            'name'     => 'Ibu Wakil Direktur',
-            'email'    => 'wakil@kantor.com',
-            'password' => $passwordDefault,
-            'role'     => 'Manajer',
-            'status'   => 'Aktif',
-        ]);
-
-        Karyawan::create([
-            'id_user'         => $userWakil->id_user,
-            'id_divisi'       => $divDireksi->id_divisi,
-            'nik'             => 'DIR-002',
-            'nama_lengkap'    => 'Sari Rahmawati (Wakil Direktur)',
-            'tanggal_masuk'   => '2012-05-15',
-            'status_karyawan' => 'Aktif',
-        ]);
-
-
-        // =====================================================================
-        // BAGIAN 2: MANAGER HRD (ADMIN SISTEM)
+        // BAGIAN 1: HRD (ADMIN / SUPERUSER)
         // =====================================================================
         
-        // Buat Divisi HRD
+        // 1.1 Buat Divisi HRD
         $divHRD = Divisi::create([
-            'nama_divisi' => 'HRD',
-            'deskripsi'   => 'Human Resource Development',
-            'status'      => 'Aktif',
+            'nama_divisi' => 'Human Resource',
+            // deskripsi (nullable) -> SKIP
+            'status'      => true,
         ]);
 
-        // User Manager HRD (Role Khusus: HRD)
-        $userManagerHRD = User::create([
+        // 1.2 Buat User HRD
+        $userHRD = User::create([
             'name'     => 'Manager HRD',
             'email'    => 'hrd@kantor.com',
             'password' => $passwordDefault,
-            'role'     => 'HRD', // <--- ROLE KHUSUS ADMIN
-            'status'   => 'Aktif',
+            'role'     => 'HRD',
+            'status'   => true,
         ]);
 
+        // 1.3 Buat Data Karyawan HRD
         Karyawan::create([
-            'id_user'         => $userManagerHRD->id_user,
-            'id_divisi'       => $divHRD->id_divisi,
-            'nik'             => 'HRD-001',
-            'nama_lengkap'    => 'Siti Aminah (Manager HRD)',
-            'tanggal_masuk'   => '2015-02-10',
-            'status_karyawan' => 'Aktif',
+            'id_user'       => $userHRD->id_user,
+            'id_divisi'     => $divHRD->id_divisi,
+            'nik'           => 'HRD-001',
+            'nama_lengkap'  => 'Siti Aminah, S.Psi',
+            'jenis_kelamin' => 'P',           // Wajib: L/P
+            'tanggal_lahir' => '1990-05-15',  // Wajib
+            'alamat'        => 'Jl. Sudirman No. 1, Jakarta', // Wajib
+            'tanggal_masuk' => '2015-02-10',  // Wajib
+            // foto (nullable) -> SKIP
+            'status'        => true,
         ]);
 
-        // Update Kepala Divisi HRD
-        $divHRD->update(['id_manajer' => $userManagerHRD->id_user]);
-
-        // Staff HRD
-        $userStaffHRD = User::create([
-            'name'     => 'Staff HRD',
-            'email'    => 'staff.hrd@kantor.com',
-            'password' => $passwordDefault,
-            'role'     => 'Karyawan',
-            'status'   => 'Aktif',
-        ]);
-
-        Karyawan::create([
-            'id_user'         => $userStaffHRD->id_user,
-            'id_divisi'       => $divHRD->id_divisi,
-            'nik'             => 'HRD-005',
-            'nama_lengkap'    => 'Dewi Sartika (Staff HRD)',
-            'tanggal_masuk'   => '2020-08-17',
-            'status_karyawan' => 'Aktif',
-        ]);
+        // Set Manager untuk Divisi HRD
+        $divHRD->update(['id_manajer' => $userHRD->id_user]);
 
 
         // =====================================================================
-        // BAGIAN 3: DIVISI & MANAGER LAINNYA (SESUAI STRUKTUR)
+        // BAGIAN 2: DIVISI & KARYAWAN LAIN
         // =====================================================================
 
-        // Daftar Divisi selain HRD & Direksi
-        $daftarDivisi = [
-            'Logistik'   => ['mgr_name' => 'Manager Logistik',   'staff_name' => 'Staff Logistik'],
-            'Keuangan'   => ['mgr_name' => 'Manager Keuangan',   'staff_name' => 'Staff Keuangan'],
-            'Accounting' => ['mgr_name' => 'Manager Accounting', 'staff_name' => 'Staff Accounting'],
-            'Service'    => ['mgr_name' => 'Manager Service',    'staff_name' => 'Staff Service'],
-            'Store'      => ['mgr_name' => 'Manager Store',      'staff_name' => 'Staff Store'],
-        ];
+        $listDivisi = ['IT Development', 'Finance', 'Marketing', 'Operasional'];
+        $counter = 1;
 
-        $counter = 1; // Untuk generate NIK dummy
-
-        foreach ($daftarDivisi as $namaDivisi => $personil) {
+        foreach ($listDivisi as $namaDivisi) {
             
-            // 3.1 Buat Divisi
+            // 2.1 Buat Divisi
             $divisi = Divisi::create([
                 'nama_divisi' => $namaDivisi,
-                'deskripsi'   => "Divisi operasional bagian $namaDivisi",
-                'status'      => 'Aktif',
+                'status'      => true,
             ]);
 
-            // 3.2 Buat User MANAGER
-            $emailMgr = strtolower($namaDivisi) . '.mgr@kantor.com';
+            // --- A. BUAT MANAGER ---
+            $slug = strtolower(explode(' ', $namaDivisi)[0]); // Ambil kata pertama utk email (it, finance, dll)
+            
             $userManager = User::create([
-                'name'     => $personil['mgr_name'],
-                'email'    => $emailMgr,
+                'name'     => 'Manager ' . $namaDivisi,
+                'email'    => $slug . '.mgr@kantor.com',
                 'password' => $passwordDefault,
-                'role'     => 'Manajer', // Role Manajer
-                'status'   => 'Aktif',
+                'role'     => 'Manajer',
+                'status'   => true,
             ]);
 
-            // Buat Data Karyawan Manager
             Karyawan::create([
-                'id_user'         => $userManager->id_user,
-                'id_divisi'       => $divisi->id_divisi,
-                'nik'             => strtoupper(substr($namaDivisi, 0, 3)) . '-001',
-                'nama_lengkap'    => 'Bpk/Ibu ' . $personil['mgr_name'],
-                'tanggal_masuk'   => '2016-01-0' . $counter,
-                'status_karyawan' => 'Aktif',
+                'id_user'       => $userManager->id_user,
+                'id_divisi'     => $divisi->id_divisi,
+                'nik'           => strtoupper(substr($slug, 0, 3)) . '-001',
+                'nama_lengkap'  => 'Budi ' . $namaDivisi, // Nama Dummy
+                'jenis_kelamin' => 'L',
+                'tanggal_lahir' => '1985-08-17',
+                'alamat'        => 'Jl. Kebon Jeruk No. ' . $counter,
+                'tanggal_masuk' => '2018-01-01',
+                'status'        => true,
             ]);
 
-            // Set User ini sebagai Kepala Divisi
+            // Update Divisi dengan ID Manager
             $divisi->update(['id_manajer' => $userManager->id_user]);
 
 
-            // 3.3 Buat User STAFF (Karyawan)
-            $emailStaff = strtolower($namaDivisi) . '.staff@kantor.com';
-            $userStaff = User::create([
-                'name'     => $personil['staff_name'],
-                'email'    => $emailStaff,
-                'password' => $passwordDefault,
-                'role'     => 'Karyawan', // Role Karyawan Biasa
-                'status'   => 'Aktif',
-            ]);
+            // --- B. BUAT STAFF (2 Orang per Divisi) ---
+            for ($i = 1; $i <= 2; $i++) {
+                $userStaff = User::create([
+                    'name'     => 'Staff ' . $namaDivisi . ' ' . $i,
+                    'email'    => $slug . '.staff' . $i . '@kantor.com',
+                    'password' => $passwordDefault,
+                    'role'     => 'Karyawan',
+                    'status'   => true,
+                ]);
 
-            // Buat Data Karyawan Staff
-            Karyawan::create([
-                'id_user'         => $userStaff->id_user,
-                'id_divisi'       => $divisi->id_divisi,
-                'nik'             => strtoupper(substr($namaDivisi, 0, 3)) . '-005',
-                'nama_lengkap'    => 'Sdr/i ' . $personil['staff_name'],
-                'tanggal_masuk'   => '2021-06-1' . $counter,
-                'status_karyawan' => 'Aktif',
-            ]);
+                Karyawan::create([
+                    'id_user'       => $userStaff->id_user,
+                    'id_divisi'     => $divisi->id_divisi,
+                    'nik'           => strtoupper(substr($slug, 0, 3)) . '-00' . ($i + 1),
+                    'nama_lengkap'  => 'Andi Staff ' . $namaDivisi . ' ' . $i,
+                    'jenis_kelamin' => ($i % 2 == 0) ? 'P' : 'L', // Selang seling L/P
+                    'tanggal_lahir' => '1995-0' . $i . '-20',
+                    'alamat'        => 'Jl. Merdeka No. ' . ($counter + $i),
+                    'tanggal_masuk' => '2021-06-15',
+                    'status'        => true,
+                ]);
+            }
 
-            $counter++;
+            $counter += 5; // Biar alamat beda-beda dikit
         }
     }
 }
