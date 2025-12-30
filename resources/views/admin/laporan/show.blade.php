@@ -7,7 +7,7 @@
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
                     <li class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400">
-                        <a href="{{ route('admin.monitoring.index') }}">Monitoring</a>
+                        <a href="{{ route('admin.laporan.index') }}">Laporan</a>
                     </li>
                     <li aria-current="page">
                         <div class="flex items-center">
@@ -27,9 +27,9 @@
             
             {{-- TOMBOL NAVIGASI (Hanya di Layar) --}}
             <div class="mb-6 flex justify-between items-center no-print">
-                <a href="{{ route('admin.monitoring.index') }}" class="flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium transition duration-150">
+                <a href="{{ route('admin.laporan.index') }}" class="flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium transition duration-150">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Kembali ke Monitoring
+                    Kembali ke Laporan
                 </a>
                 <button onclick="window.print()" class="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 dark:bg-white dark:text-gray-800 dark:hover:bg-gray-200 text-white font-bold py-2 px-4 rounded-lg shadow transition transform hover:scale-105">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>

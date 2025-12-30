@@ -25,7 +25,7 @@
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- Tombol Cetak (No Print) --}}
+            {{-- Tombol Cetak (Hanya Tampil di Layar) --}}
             <div class="mb-6 flex justify-end items-center no-print">
                 <button onclick="window.print()" class="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 dark:bg-white dark:text-gray-800 dark:hover:bg-gray-200 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg transition transform hover:-translate-y-0.5">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -48,7 +48,7 @@
                         </div>
                         
                         {{-- Score Box --}}
-                        <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 text-center min-w-[140px] shadow-lg">
+                        <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 text-center min-w-[140px] shadow-lg print-score-box">
                             <p class="text-xs uppercase tracking-wide font-bold opacity-80 mb-1">Total Skor</p>
                             <p class="text-4xl font-black">
                                 {{ isset($dataRapor['total_skor_akhir']) ? number_format($dataRapor['total_skor_akhir'], 2) : '0.00' }}
@@ -57,7 +57,7 @@
                     </div>
                     
                     {{-- Periode Badge --}}
-                    <div class="mt-6 inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium backdrop-blur-sm border border-white/10">
+                    <div class="mt-6 inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium backdrop-blur-sm border border-white/10 print-badge">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         @if($periode)
                             Periode Evaluasi: {{ $periode->nama_periode }}
@@ -74,7 +74,7 @@
                         Rincian Pencapaian KPI
                     </h3>
 
-                    <div class="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <div class="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-xl print-table-container">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
@@ -112,7 +112,7 @@
                                         </span>
                                     </td>
 
-                                    {{-- Capaian --}}
+                                    {{-- Capaian (Dengan Warna Badge) --}}
                                     <td class="px-6 py-4 text-center whitespace-nowrap">
                                         @php
                                             $capaian = $item['pencapaian'];
@@ -120,7 +120,7 @@
                                                          ($capaian >= 80 ? 'bg-blue-100 text-blue-800 border-blue-200' :
                                                          ($capaian >= 50 ? 'bg-yellow-100 text-yellow-800 border-yellow-200' : 'bg-red-100 text-red-800 border-red-200'));
                                         @endphp
-                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold border {{ $badgeClass }}">
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold border {{ $badgeClass }} print-badge-reset">
                                             {{ number_format($capaian, 1) }}%
                                         </span>
                                     </td>
@@ -161,25 +161,25 @@
                     <div class="hidden print-show mt-20 pt-10 border-t border-black">
                         <div class="flex justify-between text-center">
                             <div class="w-1/3">
-                                <p class="mb-24 text-sm font-bold">Karyawan,</p>
+                                <p class="mb-24 text-sm font-bold">Diterima oleh,</p>
                                 <p class="font-bold underline">{{ $karyawan->nama_lengkap }}</p>
-                                <p class="text-xs mt-1">NIK: {{ $karyawan->nik }}</p>
+                                <p class="text-xs mt-1">Karyawan</p>
                             </div>
                             <div class="w-1/3">
-                                <p class="mb-24 text-sm font-bold">Mengetahui (Manajer),</p>
+                                <p class="mb-24 text-sm font-bold">Disetujui oleh,</p>
                                 <p class="font-bold underline">_______________________</p>
-                                <p class="text-xs mt-1">Kepala Divisi</p>
+                                <p class="text-xs mt-1">Atasan Langsung</p>
                             </div>
                         </div>
                         <div class="mt-12 text-center text-[10px] text-gray-500 uppercase tracking-widest">
-                            Dicetak otomatis dari Sistem KPI pada {{ date('d F Y H:i') }}
+                            Dokumen ini dicetak otomatis oleh Sistem KPI pada {{ date('d F Y H:i') }}
                         </div>
                     </div>
 
                 </div>
             </div>
 
-            {{-- STYLE KHUSUS CETAK --}}
+            {{-- STYLE KHUSUS CETAK (Agar Rapi di Kertas A4) --}}
             <style>
                 @media print {
                     @page { margin: 0; size: A4; }
@@ -205,15 +205,16 @@
                         margin-bottom: 20px;
                     }
                     .print-header h1, .print-header h4, .print-header p { color: black !important; opacity: 1 !important; }
-                    .print-header .border-white\/20 { border: 2px solid #000 !important; }
-                    
+                    .print-score-box { border: 2px solid #000 !important; background: white !important; color: black !important; }
+                    .print-badge { border: 1px solid #000 !important; background: white !important; color: black !important; }
+
                     /* Table Styling */
                     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
                     th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 11px; }
                     th { background-color: #e5e5e5 !important; font-weight: bold; text-transform: uppercase; }
                     
-                    /* Force Badge Colors to Grayscale/Simple Border */
-                    .bg-green-100, .bg-blue-100, .bg-yellow-100, .bg-red-100 { 
+                    /* Force Badge Colors to Grayscale */
+                    .print-badge-reset { 
                         background-color: white !important; 
                         border: 1px solid #000 !important; 
                         color: black !important;

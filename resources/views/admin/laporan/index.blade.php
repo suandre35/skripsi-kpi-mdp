@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h2 class="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
-                {{ __('Monitoring Penilaian') }}
+                {{ __('Laporan Penilaian') }}
             </h2>
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -14,7 +14,7 @@
                             <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
                             </svg>
-                            <span class="ml-1 text-sm font-medium text-gray-800 dark:text-gray-100">Monitoring</span>
+                            <span class="ml-1 text-sm font-medium text-gray-800 dark:text-gray-100">Laporan</span>
                         </div>
                     </li>
                 </ol>
@@ -30,7 +30,7 @@
                 
                 {{-- TOOLBAR: Filter & Search --}}
                 <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50">
-                    <form method="GET" action="{{ route('admin.monitoring.index') }}" class="flex flex-col lg:flex-row gap-4 justify-between items-center">
+                    <form method="GET" action="{{ route('admin.laporan.index') }}" class="flex flex-col lg:flex-row gap-4 justify-between items-center">
                         
                         {{-- Group Filter Kiri --}}
                         <div class="flex flex-col md:flex-row gap-3 w-full lg:w-auto">
@@ -67,7 +67,7 @@
 
                             {{-- Tombol Reset --}}
                             @if(request('id_divisi') || request('search'))
-                                <a href="{{ route('admin.monitoring.index', ['id_periode' => $selectedPeriode]) }}" class="flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:text-white shadow-sm transition">
+                                <a href="{{ route('admin.laporan.index', ['id_periode' => $selectedPeriode]) }}" class="flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:text-white shadow-sm transition">
                                     Reset
                                 </a>
                             @endif
@@ -149,10 +149,10 @@
                                 {{-- Kolom 4: Aksi --}}
                                 <td class="px-6 py-4 text-center">
                                     @if($selectedPeriode)
-                                        <a href="{{ route('admin.monitoring.show', ['karyawan' => $karyawan->id_karyawan, 'periode' => $selectedPeriode]) }}" 
+                                        <a href="{{ route('admin.laporan.show', ['karyawan' => $karyawan->id_karyawan, 'periode' => $selectedPeriode]) }}" 
                                            class="inline-flex items-center justify-center px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 shadow-md transition transform hover:-translate-y-0.5">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                            Detail Rapor
+                                            Detail
                                         </a>
                                     @else
                                         <button disabled class="inline-flex items-center justify-center px-3 py-2 text-xs font-medium text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed border border-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-500" title="Pilih periode terlebih dahulu">

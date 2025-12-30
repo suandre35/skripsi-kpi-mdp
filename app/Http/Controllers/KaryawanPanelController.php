@@ -23,8 +23,8 @@ class KaryawanPanelController extends Controller
             return redirect()->route('dashboard')->with('error', 'Data Karyawan tidak ditemukan.');
         }
 
-        // 2. Ambil Periode Aktif
-        $periode = PeriodeEvaluasi::where('status', 'Aktif')->first();
+        // 2. Ambil Periode Aktif (PERBAIKAN: status -> true)
+        $periode = PeriodeEvaluasi::where('status', true)->first();
         
         // 3. Hitung Skor (Jika ada periode aktif)
         $dataRapor = [
@@ -39,16 +39,17 @@ class KaryawanPanelController extends Controller
         return view('karyawan.index', compact('karyawan', 'periode', 'dataRapor'));
     }
 
-    // --- HELPER FUNCTION (Logic Hitungan sama dengan Manajer/HRD) ---
+    // --- HELPER FUNCTION (Logic Hitungan SAMA PERSIS dengan Manajer) ---
     private function getDetailSkor($idKaryawan, $idPeriode, $idDivisiStr)
     {
         $header = PenilaianHeader::where('id_karyawan', $idKaryawan)
                                  ->where('id_periode', $idPeriode)
                                  ->first();
 
+        // PERBAIKAN: status -> true
         $allIndikators = KategoriKpi::with(['indikators' => function($q) {
-            $q->where('status', 'Aktif')->with(['target', 'bobot']);
-        }])->where('status', 'Aktif')->get();
+            $q->where('status', true)->with(['target', 'bobot']);
+        }])->where('status', true)->get();
 
         $totalSkorAkhir = 0;
         $detail = [];
@@ -57,6 +58,7 @@ class KaryawanPanelController extends Controller
             foreach ($kategori->indikators as $indikator) {
                 // Filter Divisi
                 $targetsDivisi = $indikator->target_divisi ?? [];
+                // Pastikan tipe data sama (string vs int)
                 if (!in_array((string)$idDivisiStr, $targetsDivisi)) continue;
 
                 $nilaiTarget = $indikator->target->nilai_target ?? 0;

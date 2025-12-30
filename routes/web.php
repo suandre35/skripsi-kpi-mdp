@@ -44,8 +44,8 @@ Route::middleware(['auth', 'role:HRD'])->group(function () {
     Route::resource('penilaian', PenilaianController::class);
     
     // Laporan Nilai
-    Route::get('/laporan', [LaporanHrdController::class, 'index'])->name('admin.monitoring.index');
-    Route::get('/laporan/{karyawan}/{periode}', [LaporanHrdController::class, 'show'])->name('admin.monitoring.show');
+    Route::get('/laporan', [LaporanHrdController::class, 'index'])->name('admin.laporan.index');
+    Route::get('/laporan/{karyawan}/{periode}', [LaporanHrdController::class, 'show'])->name('admin.laporan.show');
 
     Route::get('/ranking-kpi', [LaporanHrdController::class, 'ranking'])->name('admin.ranking.index');
 });

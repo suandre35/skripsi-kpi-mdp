@@ -107,58 +107,43 @@ class PenilaianController extends Controller
      */
     public function store(Request $request)
     {
-        // ... (Isi sama seperti sebelumnya, tidak ada perubahan logika waktu disini) ...
-        // Kode store Anda yang lama sudah aman.
+        // 1. Validasi Input Single
         $request->validate([
-            'id_karyawan' => 'required|exists:karyawans,id_karyawan',
-            'id_periode'  => 'required|exists:periode_evaluasis,id_periode',
-            'aktivitas.*.nilai' => 'nullable|numeric|min:0',
+            'id_karyawan'  => 'required|exists:karyawans,id_karyawan',
+            'id_periode'   => 'required|exists:periode_evaluasis,id_periode',
+            'id_indikator' => 'required|exists:indikator_kpis,id_indikator',
+            'nilai_input'  => 'required|numeric|min:0',
+            'catatan'      => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
 
         try {
-            $hasData = false;
-            if ($request->has('aktivitas')) {
-                foreach ($request->aktivitas as $data) {
-                    if (isset($data['nilai']) && $data['nilai'] !== null && $data['nilai'] !== '') {
-                        $hasData = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!$hasData) {
-                return redirect()->back()->with('error', 'Isi minimal satu nilai.');
-            }
-
+            // 2. Buat atau Ambil Header (Satu header per karyawan per periode)
             $header = PenilaianHeader::firstOrCreate(
                 [
                     'id_karyawan' => $request->id_karyawan,
                     'id_periode'  => $request->id_periode,
                 ],
                 [
-                    'id_penilai'  => Auth::id(),
+                    'id_penilai'  => Auth::id(), // Set penilai pertama kali buat
                 ]
             );
 
-            foreach ($request->aktivitas as $id_indikator => $data) {
-                if (isset($data['nilai']) && $data['nilai'] !== null && $data['nilai'] !== '') {
-                    PenilaianDetail::create([
-                        'id_penilaianHeader' => $header->id_penilaianHeader,
-                        'id_indikator'       => $id_indikator,
-                        'nilai_input'        => $data['nilai'],
-                        'catatan'            => $data['catatan'] ?? null,
-                    ]);
-                }
-            }
+            // 3. Simpan Detail (Single Row)
+            PenilaianDetail::create([
+                'id_penilaianHeader' => $header->id_penilaianHeader,
+                'id_indikator'       => $request->id_indikator,
+                'nilai_input'        => $request->nilai_input,
+                'catatan'            => $request->catatan,
+            ]);
 
             DB::commit();
-            return redirect()->route('penilaian.index')->with('success', 'Berhasil disimpan!');
+            return redirect()->route('penilaian.index')->with('success', 'Berhasil menyimpan aktivitas!');
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
     }
 
