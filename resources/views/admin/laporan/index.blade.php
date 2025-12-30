@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h2 class="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
-                {{ __('Laporan Penilaian') }}
+                {{ __('Laporan Evaluasi') }}
             </h2>
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
