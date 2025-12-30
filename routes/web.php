@@ -12,6 +12,7 @@ use App\Http\Controllers\TargetKpiController;
 use App\Http\Controllers\PeriodeEvaluasiController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\LaporanHrdController;
+use App\Http\Controllers\KeamananController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -48,6 +49,12 @@ Route::middleware(['auth', 'role:HRD'])->group(function () {
     Route::get('/laporan/{karyawan}/{periode}', [LaporanHrdController::class, 'show'])->name('admin.laporan.show');
 
     Route::get('/ranking-kpi', [LaporanHrdController::class, 'ranking'])->name('admin.ranking.index');
+
+    // FITUR KEAMANAN
+    Route::prefix('keamanan')->name('keamanan.')->group(function () {
+        Route::get('/riwayat-penilaian', [KeamananController::class, 'riwayatPenilaian'])->name('riwayat');
+        Route::get('/aktivitas-user', [KeamananController::class, 'aktivitasUser'])->name('aktivitas');
+    });
 });
 
 

@@ -1,6 +1,7 @@
 <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
        class="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-hidden bg-white dark:bg-gray-900 duration-300 ease-in-out lg:static lg:translate-x-0 border-r border-gray-100 dark:border-gray-800">
     
+    {{-- LOGO & HEADER --}}
     <div class="flex items-center justify-between gap-2 px-6 h-16 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
@@ -14,10 +15,13 @@
         </button>
     </div>
 
+    {{-- MENU LINKS --}}
     <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-        <nav class="mt-6 px-4 pb-6 space-y-1">
+        <nav class="mt-6 px-4 pb-6 space-y-2"> {{-- Ubah space-y-1 jadi space-y-2 agar antar grup lebih rapi --}}
             
-            <div class="mb-6">
+            {{-- MENU UTAMA (DASHBOARD) --}}
+            {{-- REVISI: Ubah mb-6 jadi mb-3 agar jarak ke bawah tidak terlalu jauh --}}
+            <div class="mb-3">
                 <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Menu Utama</p>
                 <a href="{{ route('dashboard') }}" 
                    class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 
@@ -30,9 +34,11 @@
                 </a>
             </div>
 
+            {{-- ROLE: HRD --}}
             @if(Auth::user()->role == 'HRD')
 
-                <div class="mb-6">
+                {{-- REVISI: Tambahkan class 'space-y-1' agar antar item list ada jarak sedikit --}}
+                <div class="mb-6 space-y-1">
                     <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Master Organisasi</p>
                     
                     <a href="{{ route('users.index') }}" class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('users.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600' }}">
@@ -51,7 +57,7 @@
                     </a>
                 </div>
 
-                <div class="mb-6">
+                <div class="mb-6 space-y-1">
                     <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Master KPI</p>
 
                     <a href="{{ route('periode.index') }}" class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('periode.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600' }}">
@@ -80,7 +86,7 @@
                     </a>
                 </div>
 
-                <div class="mb-6">
+                <div class="mb-6 space-y-1">
                     <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Laporan & Analisa</p>
 
                     <a href="{{ route('admin.laporan.index') }}" class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.laporan.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600' }}">
@@ -94,12 +100,26 @@
                     </a>
                 </div>
 
+                <div class="mb-6 space-y-1">
+                    <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Keamanan & Audit</p>
+
+                    <a href="{{ route('keamanan.riwayat') }}" class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('keamanan.riwayat') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600' }}">
+                        <svg class="w-5 h-5 transition-colors {{ request()->routeIs('keamanan.riwayat') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Riwayat Penilaian
+                    </a>
+
+                    <a href="{{ route('keamanan.aktivitas') }}" class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('keamanan.aktivitas') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600' }}">
+                        <svg class="w-5 h-5 transition-colors {{ request()->routeIs('keamanan.aktivitas') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        Aktivitas User
+                    </a>
+                </div>
+
             @endif
 
 
             @if(Auth::user()->role == 'Manajer')
 
-                <div class="mb-6">
+                <div class="mb-6 space-y-1">
                     <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Aktivitas</p>
 
                     <a href="{{ route('penilaian.index') }}" class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('penilaian.index') || request()->routeIs('penilaian.create') || request()->routeIs('penilaian.edit') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600' }}">
@@ -108,7 +128,7 @@
                     </a>
                 </div>
 
-                <div class="mb-6">
+                <div class="mb-6 space-y-1">
                     <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Laporan Tim</p>
                     
                     <a href="{{ route('penilaian.laporan') }}" class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('penilaian.laporan') || request()->routeIs('penilaian.detailLaporan') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600' }}">
@@ -121,7 +141,7 @@
 
             @if(Auth::user()->role == 'Karyawan')
                 
-                <div class="mb-6">
+                <div class="mb-6 space-y-1">
                     <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Menu Saya</p>
                     
                     <a href="{{ route('karyawan.rapor') }}" class="group relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.rapor') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600' }}">

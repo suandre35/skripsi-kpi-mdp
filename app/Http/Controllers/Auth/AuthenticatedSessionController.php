@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Models\LogAktivitas;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -27,6 +28,14 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        LogAktivitas::create([
+            'id_user' => Auth::id(),
+            'aktivitas' => 'Login',
+            'deskripsi' => 'User berhasil login ke sistem',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+        ]);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
