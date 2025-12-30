@@ -102,13 +102,24 @@
                             @forelse($karyawans as $karyawan)
                             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition duration-150">
                                 
-                                {{-- Kolom 1: Nama Karyawan --}}
+                                {{-- Kolom 1: Nama Karyawan & Foto --}}
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        {{-- Avatar Inisial --}}
-                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 dark:from-blue-900 dark:to-indigo-900 dark:text-blue-200 flex items-center justify-center text-sm font-bold border border-blue-200 dark:border-blue-800 shadow-sm">
-                                            {{ substr($karyawan->nama_lengkap, 0, 1) }}
+                                        {{-- LOGIK FOTO PROFIL --}}
+                                        <div class="flex-shrink-0 w-10 h-10">
+                                            @if($karyawan->foto && Storage::disk('public')->exists($karyawan->foto))
+                                                {{-- Jika Ada Foto --}}
+                                                <img class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm" 
+                                                     src="{{ asset('storage/' . $karyawan->foto) }}" 
+                                                     alt="{{ $karyawan->nama_lengkap }}">
+                                            @else
+                                                {{-- Jika Tidak Ada Foto (Inisial) --}}
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 dark:from-blue-900 dark:to-indigo-900 dark:text-blue-200 flex items-center justify-center text-sm font-bold border border-blue-200 dark:border-blue-800 shadow-sm">
+                                                    {{ substr($karyawan->nama_lengkap, 0, 1) }}
+                                                </div>
+                                            @endif
                                         </div>
+
                                         <div>
                                             <div class="font-bold text-gray-900 dark:text-white">{{ $karyawan->nama_lengkap }}</div>
                                             <div class="text-xs text-gray-500 font-mono">{{ $karyawan->nik }}</div>

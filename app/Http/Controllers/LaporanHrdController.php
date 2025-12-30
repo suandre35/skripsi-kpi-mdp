@@ -140,14 +140,13 @@ class LaporanHrdController extends Controller
     public function ranking(Request $request)
     {
         $periodes = PeriodeEvaluasi::all();
-        $divisis = Divisi::where('status', true)->get(); // status -> boolean
+        $divisis = Divisi::where('status', true)->get();
 
-        $periodeAktif = PeriodeEvaluasi::where('status', true)->first(); // status -> boolean
+        $periodeAktif = PeriodeEvaluasi::where('status', true)->first();
         $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
         $selectedDivisi = $request->id_divisi ?? null;
 
         // Query Dasar Karyawan Aktif
-        // PERBAIKAN: Ganti 'status_karyawan', 'Aktif' menjadi 'status', true
         $query = Karyawan::with('divisi')->where('status', true);
 
         // Filter Role Karyawan Only
@@ -165,12 +164,32 @@ class LaporanHrdController extends Controller
         $rankingCollection = $karyawans->map(function($karyawan) use ($selectedPeriode) {
             $skor = $selectedPeriode ? $this->hitungSkor($karyawan->id_karyawan, $selectedPeriode, $karyawan->id_divisi) : 0;
             
+            // LOGIKA GRADE BARU (SS, S, A, B, C, D, E)
+            $grade = 'E';
+            
+            if ($skor > 120) {
+                $grade = 'SS';
+            } elseif ($skor >= 100) {
+                $grade = 'S';
+            } elseif ($skor >= 90) {
+                $grade = 'A';
+            } elseif ($skor >= 80) {
+                $grade = 'B';
+            } elseif ($skor >= 70) {
+                $grade = 'C';
+            } elseif ($skor >= 60) {
+                $grade = 'D';
+            } else {
+                $grade = 'E';
+            }
+
             return [
                 'nama' => $karyawan->nama_lengkap,
+                'foto' => $karyawan->foto, // Pastikan foto terambil
                 'nik' => $karyawan->nik,
                 'divisi' => $karyawan->divisi->nama_divisi ?? '-',
                 'skor' => $skor,
-                'grade' => $skor >= 90 ? 'A' : ($skor >= 80 ? 'B' : ($skor >= 70 ? 'C' : ($skor >= 60 ? 'D' : 'E')))
+                'grade' => $grade
             ];
         });
 
