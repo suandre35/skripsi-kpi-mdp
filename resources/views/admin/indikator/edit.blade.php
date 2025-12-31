@@ -42,8 +42,8 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Sesuaikan target dan parameter indikator.</p>
                     </div>
                     {{-- Status Badge --}}
-                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $indikator->status == 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $indikator->status }}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $indikator->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        {{ $indikator->status ? 'Aktif' : 'Nonaktif' }}
                     </span>
                 </div>
 
