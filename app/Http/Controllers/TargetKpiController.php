@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\TargetKpi;
 use App\Models\IndikatorKpi;
 use App\Models\KategoriKpi;
-use App\Models\Divisi; // Import Model Divisi
+use App\Models\Divisi;
 
 class TargetKpiController extends Controller
 {
@@ -28,8 +28,9 @@ class TargetKpiController extends Controller
         if ($request->filled('divisi')) {
             $divisiId = $request->divisi;
             $query->whereHas('indikator', function($q) use ($divisiId) {
-                // whereJsonContains sangat cocok untuk format ["1", "2"] seperti di screenshot
-                $q->whereJsonContains('target_divisi', $divisiId);
+                // whereJsonContains sangat cocok untuk format ["1", "2"]
+                // Casting ke string karena JSON menyimpan angka sebagai string kadang-kadang
+                $q->whereJsonContains('target_divisi', (string)$divisiId);
             });
         }
 
@@ -48,15 +49,16 @@ class TargetKpiController extends Controller
 
         // Data Pendukung Dropdown
         $kategoris = KategoriKpi::orderBy('nama_kategori', 'asc')->get();
-        $divisis = Divisi::where('status', 'Aktif')->orderBy('nama_divisi', 'asc')->get();
+        // Hanya ambil divisi aktif untuk filter
+        $divisis = Divisi::where('status', true)->orderBy('nama_divisi', 'asc')->get();
 
         return view('admin.target.index', compact('targets', 'kategoris', 'divisis'));
     }
-
-    // ... method create, store, edit, update, destroy TETAP SAMA ...
     
     public function create()
     {
+        // Ambil indikator aktif yang belum punya target (Optional: kalau mau 1 indikator = 1 target)
+        // Atau ambil semua indikator aktif
         $indikators = IndikatorKpi::where('status', true)->orderBy('nama_indikator', 'asc')->get();
         return view('admin.target.create', compact('indikators'));
     }
@@ -97,9 +99,17 @@ class TargetKpiController extends Controller
         return redirect()->route('target.index')->with('success', 'Target KPI berhasil diperbarui!');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     * Menggunakan Soft Delete logic (di view pakai modal)
+     */
     public function destroy(string $id)
     {
         $target = TargetKpi::findOrFail($id);
+        
+        // Opsional: Cek apakah target ini sedang digunakan dalam periode penilaian aktif
+        // Jika tidak ada penilaian detail yang nge-link ke target (biasanya link ke indikator), aman dihapus.
+        
         $target->delete();
 
         return redirect()->route('target.index')->with('success', 'Target KPI berhasil dihapus!');

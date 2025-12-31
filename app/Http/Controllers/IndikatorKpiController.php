@@ -131,7 +131,23 @@ class IndikatorKpiController extends Controller
      */
     public function destroy(string $id)
     {
-        // Fitur delete dinonaktifkan agar riwayat terjaga, sarankan Nonaktif saja.
-        return redirect()->back()->with('error', 'Indikator tidak boleh dihapus demi riwayat penilaian. Gunakan status Nonaktif.');
+        $indikator = IndikatorKpi::findOrFail($id);
+
+        // 1. Cek Relasi ke Target KPI (Asumsi model IndikatorKpi punya relasi 'target')
+        if ($indikator->target()->exists()) {
+            return back()->with('error', 'Gagal menghapus! Indikator ini sudah memiliki data Target KPI. Silakan nonaktifkan statusnya saja.');
+        }
+
+        // 2. Cek Relasi ke Bobot KPI (Asumsi model IndikatorKpi punya relasi 'bobot')
+        if ($indikator->bobot()->exists()) {
+            return back()->with('error', 'Gagal menghapus! Indikator ini sudah memiliki data Bobot KPI. Silakan nonaktifkan statusnya saja.');
+        }
+
+        // 3. Cek Relasi ke Penilaian Detail (Jika sudah pernah dinilai)
+        // $indikator->penilaianDetails()->exists() ... dst
+
+        $indikator->delete();
+
+        return redirect()->route('indikator.index')->with('success', 'Indikator berhasil dihapus karena belum pernah digunakan.');
     }
 }

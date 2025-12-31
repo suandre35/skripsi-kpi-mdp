@@ -125,7 +125,7 @@
             </section>
 
             <footer class="py-6 text-center text-sm text-gray-400 dark:text-gray-600 relative z-10">
-                &copy; {{ date('Y') }} KPI System Enterprise. All rights reserved.
+                &copy; {{ date('Y') }} KPI System by Djali Suandre. All rights reserved.
             </footer>
 
         </div>

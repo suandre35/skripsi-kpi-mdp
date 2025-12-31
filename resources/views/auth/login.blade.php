@@ -45,7 +45,7 @@
             <div class="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
                 
                 <div class="text-center mb-10">
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Selamat Datang Kembali! 👋</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Selamat Datang!</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Masuk ke akun Anda untuk melanjutkan.</p>
                 </div>
 

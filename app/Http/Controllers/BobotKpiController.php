@@ -116,20 +116,24 @@ class BobotKpiController extends Controller
         return redirect()->route('bobot.index')->with('success', 'Bobot berhasil diperbarui!');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     * Bobot boleh dihapus, tapi berikan notifikasi.
+     */
     public function destroy(string $id)
     {
         $bobot = BobotKpi::findOrFail($id);
+        
+        // Opsional: Cek apakah sedang ada periode penilaian aktif?
+        // Tapi untuk simplifikasi admin, kita izinkan hapus.
+        
         $bobot->delete();
         
-        return redirect()->route('bobot.index')->with('success', 'Bobot berhasil dihapus!');
+        return redirect()->route('bobot.index')->with('success', 'Bobot berhasil dihapus! Indikator terkait kini tidak memiliki bobot.');
     }
 
     // --- HELPER FUNCTIONS ---
 
-    /**
-     * Mengambil data pemakaian bobot per divisi
-     * Return format: [ id_divisi => ['nama' => 'IT', 'used' => 80, 'sisa' => 20] ]
-     */
     private function getDivisiUsage($excludeBobotId = null)
     {
         $divisis = Divisi::where('status', true)->get();
@@ -138,8 +142,6 @@ class BobotKpiController extends Controller
         foreach ($divisis as $divisi) {
             // Cari Indikator yang punya target ke divisi ini
             $totalUsed = BobotKpi::whereHas('indikator', function($q) use ($divisi) {
-                // target_divisi disimpan sebagai JSON array ["1", "2"]
-                // Kita cari yang mengandung ID divisi ini
                 $q->whereJsonContains('target_divisi', (string)$divisi->id_divisi);
             })
             ->when($excludeBobotId, function($q) use ($excludeBobotId) {

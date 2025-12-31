@@ -101,12 +101,12 @@ class KategoriKpiController extends Controller
         $kategori = KategoriKpi::findOrFail($id);
 
         // Cek apakah kategori masih dipakai di indikator
-        if ($kategori->indikators()->count() > 0) {
-            return back()->with('error', 'Kategori tidak bisa dihapus karena masih digunakan oleh Indikator KPI.');
+        if ($kategori->indikators()->exists()) {
+            return back()->with('error', 'Gagal menghapus! Kategori ini sedang digunakan oleh Indikator KPI. Silakan nonaktifkan statusnya saja jika tidak ingin digunakan.');
         }
 
         $kategori->delete();
 
-        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus!');
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus permanen karena belum pernah digunakan.');
     }
 }
