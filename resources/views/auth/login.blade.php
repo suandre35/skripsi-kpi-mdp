@@ -106,7 +106,7 @@
             </div>
             
             <p class="absolute bottom-6 text-xs text-gray-400">
-                &copy; {{ date('Y') }} KPI System Enterprise.
+                &copy; {{ date('Y') }} KPI System by Djali Suandre.
             </p>
         </div>
     </div>
