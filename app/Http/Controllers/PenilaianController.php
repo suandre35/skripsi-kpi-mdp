@@ -52,7 +52,7 @@ class PenilaianController extends Controller
     /**
      * Form Input Log Harian
      */
-    public function create()
+    public function create(Request $request) // Tambahkan Request $request
     {
         $userLogin = Auth::user();
 
@@ -62,8 +62,7 @@ class PenilaianController extends Controller
             return redirect()->route('dashboard')->with('error', 'Akses Ditolak! Anda bukan Kepala Divisi.');
         }
 
-        // 2. Cek Periode & Waktu (PERBAIKAN DISINI)
-        // Agar kalau dipaksa masuk URL, dia nendang balik ke index penilaian, bukan dashboard
+        // 2. Cek Periode & Waktu
         $periodeAktif = PeriodeEvaluasi::where('status', true)->first();
         
         if (!$periodeAktif) {
@@ -76,7 +75,6 @@ class PenilaianController extends Controller
         }
 
         // 3. Ambil Karyawan (Satu Divisi)
-        // Pastikan status karyawan juga dicek pake boolean true jika migrasi sudah update
         $karyawans = Karyawan::where('status', true) 
                              ->where('id_divisi', $divisiDipimpin->id_divisi)
                              ->where('id_user', '!=', $userLogin->id_user)
@@ -92,14 +90,16 @@ class PenilaianController extends Controller
         $kategoris = $kategoris->map(function ($kategori) use ($myDivisiId) {
             $filteredIndikators = $kategori->indikators->filter(function ($indikator) use ($myDivisiId) {
                 $targets = $indikator->target_divisi ?? [];
-                // Pastikan target_divisi dicasting ke array jika null (safety)
                 return is_array($targets) && in_array($myDivisiId, $targets);
             });
             $kategori->setRelation('indikators', $filteredIndikators);
             return $kategori;
         })->filter(fn($k) => $k->indikators->isNotEmpty());
 
-        return view('manajer.penilaian.create', compact('periodeAktif', 'karyawans', 'kategoris'));
+        // TAMBAHAN: Ambil ID Karyawan dari URL (jika ada) untuk auto-select
+        $selectedKaryawanId = $request->query('karyawan_id');
+
+        return view('manajer.penilaian.create', compact('periodeAktif', 'karyawans', 'kategoris', 'selectedKaryawanId'));
     }
 
     /**

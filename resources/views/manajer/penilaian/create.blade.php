@@ -69,9 +69,10 @@
                             <div class="relative">
                                 <select name="id_karyawan" required class="block w-full rounded-lg border-gray-300 dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm h-11">
                                     <option value="">-- Pilih Karyawan --</option>
-                                    @foreach($karyawans as $karyawan)
-                                        <option value="{{ $karyawan->id_karyawan }}" {{ old('id_karyawan') == $karyawan->id_karyawan ? 'selected' : '' }}>
-                                            {{ $karyawan->nama_lengkap }} - {{ $karyawan->nik }}
+                                    @foreach($karyawans as $k)
+                                        <option value="{{ $k->id_karyawan }}" 
+                                            {{ (old('id_karyawan') == $k->id_karyawan || (isset($selectedKaryawanId) && $selectedKaryawanId == $k->id_karyawan)) ? 'selected' : '' }}>
+                                            {{ $k->nama_lengkap }} ({{ $k->nik }})
                                         </option>
                                     @endforeach
                                 </select>

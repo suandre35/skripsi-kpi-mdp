@@ -18,8 +18,11 @@ return new class extends Migration
             $table->string('nik')->unique();
             $table->string('nama_lengkap');
             $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->string('tempat_lahir'); 
             $table->date('tanggal_lahir');
             $table->text('alamat');
+            $table->string('no_telepon', 20);
+            $table->string('email')->unique();
             $table->string('foto')->nullable();
             $table->date('tanggal_masuk');
             $table->boolean('status')->default(true);

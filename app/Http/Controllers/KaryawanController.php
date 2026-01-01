@@ -51,13 +51,16 @@ class KaryawanController extends Controller
     {
         $request->validate([
             'id_user'       => 'required|unique:karyawans,id_user',
+            'id_divisi'     => 'nullable|exists:divisis,id_divisi',
             'nik'           => 'required|unique:karyawans,nik',
             'nama_lengkap'  => 'required|string|max:150',
             'jenis_kelamin' => 'required|in:L,P',
+            'tempat_lahir'  => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
             'alamat'        => 'nullable|string',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'id_divisi'     => 'nullable|exists:divisis,id_divisi',
+            'no_telepon'    => 'required|string|max:20',
+            'email'=> 'required|email|unique:karyawans,email',
             'tanggal_masuk' => 'required|date',
             'status'        => 'required|boolean', // Validasi Boolean
         ]);
@@ -95,12 +98,15 @@ class KaryawanController extends Controller
         $request->validate([
             'id_user'       => 'required|unique:karyawans,id_user,'.$karyawan->id_karyawan.',id_karyawan',
             'nik'           => 'required|unique:karyawans,nik,'.$karyawan->id_karyawan.',id_karyawan',
+            'id_divisi'     => 'nullable|exists:divisis,id_divisi',
             'nama_lengkap'  => 'required|string|max:150',
             'jenis_kelamin' => 'required|in:L,P',
+            'tempat_lahir'  => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
             'alamat'        => 'nullable|string',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'id_divisi'     => 'nullable|exists:divisis,id_divisi',
+            'no_telepon'    => 'required|string|max:20',
+            'email'=> 'required|email|unique:karyawans,email',
             'status'        => 'required|boolean', // Validasi Boolean
         ]);
 
