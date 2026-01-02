@@ -43,18 +43,13 @@
 
                 <div class="p-6 md:p-8">
                     
-                    {{-- Validasi Error (Alert Modern) --}}
+                    {{-- Alert Error Global (Opsional, tetap bagus jika ada error tak terduga) --}}
                     @if ($errors->any())
-                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300">
-                            <div class="flex items-center gap-2 mb-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <strong class="font-bold">Terjadi Kesalahan!</strong>
+                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span class="font-bold text-sm">Terdapat kesalahan pada inputan Anda.</span>
                             </div>
-                            <ul class="list-disc list-inside text-sm ml-5">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
                         </div>
                     @endif
 
@@ -67,6 +62,7 @@
                             <div>
                                 <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">1. Identitas User</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    
                                     {{-- Nama --}}
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
@@ -74,9 +70,19 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                             </div>
-                                            <input type="text" name="name" value="{{ old('name') }}" required placeholder="Contoh: Budi Santoso"
-                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <input type="text" name="name" value="{{ old('name') }}" placeholder="Contoh: Budi Santoso"
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('name') 
+                                                    ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                         </div>
+                                        {{-- Custom Error Message --}}
+                                        @error('name')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                     </div>
 
                                     {{-- Email --}}
@@ -86,9 +92,19 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                             </div>
-                                            <input type="email" name="email" value="{{ old('email') }}" required placeholder="nama@perusahaan.com"
-                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <input type="email" name="email" value="{{ old('email') }}" placeholder="nama@perusahaan.com"
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('email') 
+                                                    ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                         </div>
+                                        {{-- Custom Error Message --}}
+                                        @error('email')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -104,9 +120,19 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                                             </div>
-                                            <input type="password" name="password" required placeholder="Minimal 8 karakter"
-                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <input type="password" name="password" placeholder="Minimal 8 karakter"
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('password') 
+                                                    ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                         </div>
+                                        {{-- Custom Error Message --}}
+                                        @error('password')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                     </div>
 
                                     {{-- Konfirmasi Password --}}
@@ -116,8 +142,8 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                             </div>
-                                            <input type="password" name="password_confirmation" required placeholder="Ulangi password"
-                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <input type="password" name="password_confirmation" placeholder="Ulangi password"
+                                                class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                         </div>
                                     </div>
                                 </div>
@@ -131,11 +157,21 @@
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Role (Jabatan) <span class="text-red-500">*</span></label>
                                         <div class="relative">
-                                            <select name="role" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                                <option value="Karyawan">Karyawan (Staff Biasa)</option>
-                                                <option value="Manajer">Manajer (Kepala Divisi)</option>
+                                            <select name="role" 
+                                                class="block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('role') 
+                                                    ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
+                                                <option value="Karyawan" {{ old('role') == 'Karyawan' ? 'selected' : '' }}>Karyawan (Staff Biasa)</option>
+                                                <option value="Manajer" {{ old('role') == 'Manajer' ? 'selected' : '' }}>Manajer (Kepala Divisi)</option>
                                             </select>
                                         </div>
+                                        @error('role')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                         <p class="mt-1 text-xs text-gray-500">Menentukan fitur apa saja yang bisa diakses user.</p>
                                     </div>
 
@@ -143,11 +179,21 @@
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Akun</label>
                                         <div class="relative">
-                                            <select name="status" class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                                <option value="1">Aktif</option>
-                                                <option value="0">Nonaktif</option>
+                                            <select name="status" 
+                                                class="block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('status') 
+                                                    ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
+                                                <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>Aktif</option>
+                                                <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Nonaktif</option>
                                             </select>
                                         </div>
+                                        @error('status')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                         <p class="mt-1 text-xs text-gray-500">User nonaktif tidak akan bisa login ke sistem.</p>
                                     </div>
                                 </div>

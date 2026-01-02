@@ -43,14 +43,14 @@
 
                 <div class="p-6 md:p-8">
                     
-                    {{-- Validasi Error --}}
+                    {{-- Validasi Error Global --}}
                     @if ($errors->any())
-                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300">
+                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400">
                             <div class="flex items-center gap-2 mb-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <strong class="font-bold">Terjadi Kesalahan!</strong>
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <strong class="font-bold text-sm">Terjadi Kesalahan!</strong>
                             </div>
-                            <ul class="list-disc list-inside text-sm ml-5">
+                            <ul class="list-disc list-inside text-xs ml-1">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
@@ -58,7 +58,8 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('kategori.store') }}" method="POST">
+                    {{-- FORM START: Novalidate added --}}
+                    <form action="{{ route('kategori.store') }}" method="POST" novalidate>
                         @csrf
                         
                         <div class="space-y-6">
@@ -76,9 +77,19 @@
                                                 {{-- Icon Tag --}}
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                                             </div>
-                                            <input type="text" name="nama_kategori" id="nama_kategori" value="{{ old('nama_kategori') }}" required placeholder="Contoh: Kinerja Individu"
-                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <input type="text" name="nama_kategori" id="nama_kategori" value="{{ old('nama_kategori') }}" placeholder="Contoh: Kinerja Individu"
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('nama_kategori') 
+                                                    ? 'border-red-500 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500 dark:border-red-500 dark:text-red-400' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                         </div>
+                                        {{-- Error Message --}}
+                                        @error('nama_kategori')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                     </div>
 
                                     {{-- Status Boolean --}}
@@ -89,11 +100,20 @@
                                                 {{-- Icon Check Circle --}}
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                             </div>
-                                            <select name="status" class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150 cursor-pointer">
-                                                <option value="1">Aktif</option>
-                                                <option value="0">Nonaktif</option>
+                                            <select name="status" class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 cursor-pointer dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('status') 
+                                                    ? 'border-red-500 text-red-900 focus:ring-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 dark:border-gray-600' }}">
+                                                <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>Aktif</option>
+                                                <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Nonaktif</option>
                                             </select>
                                         </div>
+                                        @error('status')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -102,7 +122,16 @@
                             <div>
                                 <label for="deskripsi" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi (Opsional)</label>
                                 <textarea name="deskripsi" id="deskripsi" rows="4" placeholder="Jelaskan secara singkat tentang kategori ini..."
-                                    class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">{{ old('deskripsi') }}</textarea>
+                                    class="block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                    {{ $errors->has('deskripsi') 
+                                        ? 'border-red-500 text-red-900 placeholder-red-300 focus:ring-red-500 dark:border-red-500' 
+                                        : 'border-gray-300 focus:ring-blue-500 dark:border-gray-600' }}">{{ old('deskripsi') }}</textarea>
+                                @error('deskripsi')
+                                    <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
                             </div>
 
                         </div>

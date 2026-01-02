@@ -43,14 +43,14 @@
 
                 <div class="p-6 md:p-8">
                     
-                    {{-- Validasi Error --}}
+                    {{-- Validasi Error Global --}}
                     @if ($errors->any())
-                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300">
+                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400">
                             <div class="flex items-center gap-2 mb-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <strong class="font-bold">Terjadi Kesalahan!</strong>
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <strong class="font-bold text-sm">Periksa Inputan Anda!</strong>
                             </div>
-                            <ul class="list-disc list-inside text-sm ml-5">
+                            <ul class="list-disc list-inside text-xs ml-1">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
@@ -58,7 +58,8 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('target.store') }}" method="POST">
+                    {{-- FORM START: Novalidate added --}}
+                    <form action="{{ route('target.store') }}" method="POST" novalidate>
                         @csrf
                         
                         <div class="space-y-6">
@@ -71,7 +72,11 @@
                                         {{-- Icon List/Chart --}}
                                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                     </div>
-                                    <select name="id_indikator" required class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                    <select name="id_indikator" 
+                                        class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 cursor-pointer dark:bg-gray-700 dark:text-white
+                                        {{ $errors->has('id_indikator') 
+                                            ? 'border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:border-red-500 dark:text-red-400' 
+                                            : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                         <option value="">-- Pilih Indikator KPI --</option>
                                         @foreach($indikators as $indikator)
                                             <option value="{{ $indikator->id_indikator }}" {{ old('id_indikator') == $indikator->id_indikator ? 'selected' : '' }}>
@@ -80,8 +85,16 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                {{-- Error Message --}}
+                                @error('id_indikator')
+                                    <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+
                                 @if($indikators->isEmpty())
-                                    <p class="mt-2 text-xs text-red-500 flex items-center gap-1">
+                                    <p class="mt-2 text-xs text-red-500 flex items-center gap-1 font-medium">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         Belum ada indikator. Silakan buat indikator dulu.
                                     </p>
@@ -97,23 +110,41 @@
                                             {{-- Icon Calculator/Number --}}
                                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                                         </div>
-                                        <input type="number" step="any" name="nilai_target" value="{{ old('nilai_target') }}" required placeholder="Contoh: 5000000"
-                                            class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                        <input type="number" step="any" name="nilai_target" value="{{ old('nilai_target') }}" placeholder="Contoh: 5000000"
+                                            class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                            {{ $errors->has('nilai_target') 
+                                                ? 'border-red-500 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500 dark:border-red-500 dark:text-red-400' 
+                                                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                     </div>
+                                    @error('nilai_target')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
                                     <p class="mt-1 text-xs text-gray-500">Masukkan angka murni tanpa titik/koma (Contoh: 1000000 untuk 1 Juta).</p>
                                 </div>
 
                                 {{-- Satuan / Jenis --}}
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Satuan / Jenis Target</label>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Satuan / Jenis Target <span class="text-red-500">*</span></label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             {{-- Icon Tag --}}
                                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                                         </div>
                                         <input type="text" name="jenis_target" value="{{ old('jenis_target') }}" placeholder="Contoh: Rupiah, %, Dokumen"
-                                            class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                            {{ $errors->has('jenis_target') 
+                                                ? 'border-red-500 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500 dark:border-red-500 dark:text-red-400' 
+                                                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                     </div>
+                                    @error('jenis_target')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
                                     <p class="mt-1 text-xs text-gray-500">Satuan ini akan muncul di laporan akhir.</p>
                                 </div>
                             </div>

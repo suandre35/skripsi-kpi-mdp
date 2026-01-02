@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use App\Models\BobotKpi;
 use App\Models\KategoriKpi;
 use App\Models\IndikatorKpi;
+use App\Models\PenilaianDetail;
 use App\Models\Divisi;
 
 class BobotKpiController extends Controller
@@ -122,14 +124,30 @@ class BobotKpiController extends Controller
      */
     public function destroy(string $id)
     {
+        // 1. Cari Data Bobot
         $bobot = BobotKpi::findOrFail($id);
-        
-        // Opsional: Cek apakah sedang ada periode penilaian aktif?
-        // Tapi untuk simplifikasi admin, kita izinkan hapus.
-        
-        $bobot->delete();
-        
-        return redirect()->route('bobot.index')->with('success', 'Bobot berhasil dihapus! Indikator terkait kini tidak memiliki bobot.');
+
+        // 2. VALIDASI MANUAL (Safety Check)
+        // Cek ke tabel Penilaian/Realisasi: Apakah indikator dari bobot ini sudah pernah dinilai?
+        // Sesuaikan 'PenilaianKpi' dengan nama model penilaian Anda sebenarnya.
+        $sedangDigunakan = PenilaianDetail::where('id_indikator', $bobot->id_indikator)->exists();
+
+        if ($sedangDigunakan) {
+            // JIKA SUDAH DIPAKAI: Tolak keras tanpa saran "nonaktifkan".
+            return redirect()->back()->with('error', 'Gagal Menghapus! Bobot ini tidak bisa dihapus karena Indikator terkait sudah memiliki riwayat penilaian karyawan. Menghapusnya akan merusak perhitungan laporan.');
+        }
+
+        // 3. EKSEKUSI HAPUS (Jika aman)
+        try {
+            $bobot->delete();
+            
+            return redirect()->route('bobot.index')
+                ->with('success', 'Bobot berhasil dihapus permanen.');
+
+        } catch (QueryException $e) {
+            // Jaga-jaga error database level (constraint)
+            return redirect()->back()->with('error', 'Terjadi kesalahan database saat menghapus data.');
+        }
     }
 
     // --- HELPER FUNCTIONS ---

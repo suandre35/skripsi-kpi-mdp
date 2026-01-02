@@ -43,14 +43,14 @@
 
                 <div class="p-6 md:p-8">
                     
-                    {{-- Validasi Error --}}
+                    {{-- Validasi Error Global --}}
                     @if ($errors->any())
-                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300">
+                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400">
                             <div class="flex items-center gap-2 mb-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <strong class="font-bold">Periksa Inputan Anda!</strong>
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <strong class="font-bold text-sm">Periksa Inputan Anda!</strong>
                             </div>
-                            <ul class="list-disc list-inside text-sm ml-5">
+                            <ul class="list-disc list-inside text-xs ml-1">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
@@ -58,7 +58,8 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('indikator.store') }}" method="POST">
+                    {{-- FORM START: Novalidate added --}}
+                    <form action="{{ route('indikator.store') }}" method="POST" novalidate>
                         @csrf
                         
                         <div class="space-y-8">
@@ -75,7 +76,11 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                                             </div>
-                                            <select name="id_kategori" required class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <select name="id_kategori" 
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 cursor-pointer dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('id_kategori') 
+                                                    ? 'border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:border-red-500 dark:text-red-400' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                                 <option value="">-- Pilih Kategori --</option>
                                                 @foreach($kategoris as $kategori)
                                                     <option value="{{ $kategori->id_kategori }}" {{ old('id_kategori') == $kategori->id_kategori ? 'selected' : '' }}>
@@ -84,6 +89,12 @@
                                                 @endforeach
                                             </select>
                                         </div>
+                                        @error('id_kategori')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                     </div>
 
                                     {{-- Nama Indikator --}}
@@ -93,9 +104,18 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                             </div>
-                                            <input type="text" name="nama_indikator" value="{{ old('nama_indikator') }}" required placeholder="Contoh: Kecepatan Respon Komplain"
-                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                            <input type="text" name="nama_indikator" value="{{ old('nama_indikator') }}" placeholder="Contoh: Kecepatan Respon Komplain"
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('nama_indikator') 
+                                                    ? 'border-red-500 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500 dark:border-red-500 dark:text-red-400' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                         </div>
+                                        @error('nama_indikator')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -106,25 +126,37 @@
                                 
                                 {{-- Target Divisi (GRID CHECKBOX) --}}
                                 <div class="mb-6">
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                    <label class="block text-sm font-semibold mb-3 {{ $errors->has('target_divisi') ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300' }}">
                                         Target Divisi <span class="text-red-500">*</span> 
-                                        <span class="text-xs font-normal text-gray-500 ml-1">(Pilih minimal satu)</span>
+                                        <span class="text-xs font-normal ml-1">(Pilih minimal satu)</span>
                                     </label>
                                     
                                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                                         @foreach($divisis as $divisi)
-                                        <label class="relative flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-colors duration-200">
+                                        <label class="relative flex items-start p-3 rounded-lg border hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-colors duration-200
+                                            {{ $errors->has('target_divisi') 
+                                                ? 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-900/10' 
+                                                : 'border-gray-200 dark:border-gray-700' }}">
                                             <div class="flex items-center h-5">
                                                 <input type="checkbox" name="target_divisi[]" value="{{ $divisi->id_divisi }}" 
                                                     {{ (is_array(old('target_divisi')) && in_array($divisi->id_divisi, old('target_divisi'))) ? 'checked' : '' }}
                                                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                             </div>
                                             <div class="ml-3 text-sm">
-                                                <span class="font-medium text-gray-900 dark:text-gray-300">{{ $divisi->nama_divisi }}</span>
+                                                <span class="font-medium {{ $errors->has('target_divisi') ? 'text-red-700 dark:text-red-300' : 'text-gray-900 dark:text-gray-300' }}">
+                                                    {{ $divisi->nama_divisi }}
+                                                </span>
                                             </div>
                                         </label>
                                         @endforeach
                                     </div>
+                                    @error('target_divisi')
+                                        <p class="mt-2 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium animate-pulse">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                    
                                     <p class="mt-2 text-xs text-gray-500 flex items-center gap-1">
                                         <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         Indikator ini hanya akan muncul pada formulir penilaian divisi yang dicentang.
@@ -140,30 +172,48 @@
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                                             </div>
                                             <input type="text" name="satuan_pengukuran" value="{{ old('satuan_pengukuran') }}" placeholder="Contoh: %, Hari, Pcs, Rupiah"
-                                                class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('satuan_pengukuran') 
+                                                    ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                         </div>
+                                        @error('satuan_pengukuran')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>{{ $message }}</p>
+                                        @enderror
                                     </div>
 
-                                    {{-- Status (BARU DITAMBAHKAN SEBARIS) --}}
+                                    {{-- Status --}}
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status Indikator <span class="text-red-500">*</span></label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                             </div>
-                                            <select name="status" class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
-                                                {{-- Value 1 = Aktif, 0 = Nonaktif --}}
+                                            <select name="status" 
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 cursor-pointer dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('status') 
+                                                    ? 'border-red-500 text-red-900 focus:ring-red-500 dark:border-red-500 dark:text-red-400' 
+                                                    : 'border-gray-300 focus:ring-blue-500 dark:border-gray-600' }}">
                                                 <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>Aktif</option>
                                                 <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Nonaktif</option>
                                             </select>
                                         </div>
+                                        @error('status')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>{{ $message }}</p>
+                                        @enderror
                                     </div>
 
                                     {{-- Deskripsi --}}
                                     <div class="md:col-span-2">
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi Detail (Opsional)</label>
                                         <textarea name="deskripsi" rows="3" placeholder="Jelaskan cara pengukuran atau detail indikator ini..."
-                                            class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">{{ old('deskripsi') }}</textarea>
+                                            class="block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                            {{ $errors->has('deskripsi') 
+                                                ? 'border-red-500 text-red-900 focus:ring-red-500 dark:border-red-500' 
+                                                : 'border-gray-300 focus:ring-blue-500 dark:border-gray-600' }}">{{ old('deskripsi') }}</textarea>
+                                        @error('deskripsi')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 font-medium"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>{{ $message }}</p>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>

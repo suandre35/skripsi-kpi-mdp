@@ -43,18 +43,13 @@
 
                 <div class="p-6 md:p-8">
                     
-                    {{-- Validasi Error --}}
+                    {{-- Alert Error Global --}}
                     @if ($errors->any())
-                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300">
-                            <div class="flex items-center gap-2 mb-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <strong class="font-bold">Terjadi Kesalahan!</strong>
+                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span class="font-bold text-sm">Terdapat kesalahan pada inputan Anda.</span>
                             </div>
-                            <ul class="list-disc list-inside text-sm ml-5">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
                         </div>
                     @endif
 
@@ -72,12 +67,23 @@
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Divisi <span class="text-red-500">*</span></label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            {{-- Icon Gedung --}}
                                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                                         </div>
-                                        <input type="text" name="nama_divisi" value="{{ old('nama_divisi') }}" required placeholder="Contoh: IT, HRD, Keuangan"
-                                            class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150">
+                                        <input type="text" name="nama_divisi" value="{{ old('nama_divisi') }}" placeholder="Contoh: IT, HRD, Keuangan"
+                                            class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 dark:bg-gray-700 dark:text-white
+                                            {{ $errors->has('nama_divisi') 
+                                                ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                     </div>
+                                    
+                                    {{-- Pesan Error Spesifik --}}
+                                    @error('nama_divisi')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                    
                                     <p class="mt-1 text-xs text-gray-500">Gunakan nama yang singkat dan jelas.</p>
                                 </div>
                             </div>
@@ -92,10 +98,13 @@
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Kepala Divisi (Manajer) <span class="text-red-500">*</span></label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                {{-- Icon User --}}
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                             </div>
-                                            <select name="id_manajer" required class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150 cursor-pointer">
+                                            <select name="id_manajer" 
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 cursor-pointer dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('id_manajer') 
+                                                    ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
                                                 <option value="">-- Pilih Manajer --</option>
                                                 @foreach($manajers as $manajer)
                                                     <option value="{{ $manajer->id_user }}" {{ old('id_manajer') == $manajer->id_user ? 'selected' : '' }}>
@@ -105,6 +114,14 @@
                                             </select>
                                         </div>
                                         
+                                        {{-- Pesan Error Spesifik --}}
+                                        @error('id_manajer')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
+
                                         @if($manajers->isEmpty())
                                             <div class="flex items-center gap-1 mt-2 text-red-600 text-xs font-bold">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -120,14 +137,25 @@
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                {{-- Icon Check Circle --}}
                                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                             </div>
-                                            <select name="status" class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm transition duration-150 cursor-pointer">
-                                                <option value="1">Aktif</option>
-                                                <option value="0">Nonaktif</option>
+                                            <select name="status" 
+                                                class="pl-10 block w-full rounded-lg shadow-sm sm:text-sm transition duration-150 cursor-pointer dark:bg-gray-700 dark:text-white
+                                                {{ $errors->has('status') 
+                                                    ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600' }}">
+                                                <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>Aktif</option>
+                                                <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Nonaktif</option>
                                             </select>
                                         </div>
+                                        
+                                        {{-- Pesan Error Spesifik --}}
+                                        @error('status')
+                                            <p class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>

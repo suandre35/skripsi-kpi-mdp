@@ -19,6 +19,16 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/tes-notif-sukses', function () {
+    return redirect()->route('target.index')
+        ->with('success', 'Target KPI berhasil ditambahkan!');
+});
+
+Route::get('/tes-notif-error', function () {
+    return redirect()->route('bobot.index')
+        ->with('error', 'Gagal Menghapus! Bobot ini tidak bisa dihapus karena Indikator terkait sudah memiliki riwayat penilaian karyawan. Menghapusnya akan merusak perhitungan laporan.');
+});
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

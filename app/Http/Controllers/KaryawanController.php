@@ -51,13 +51,13 @@ class KaryawanController extends Controller
     {
         $request->validate([
             'id_user'       => 'required|unique:karyawans,id_user',
-            'id_divisi'     => 'nullable|exists:divisis,id_divisi',
+            'id_divisi'     => 'required|exists:divisis,id_divisi',
             'nik'           => 'required|unique:karyawans,nik',
             'nama_lengkap'  => 'required|string|max:150',
             'jenis_kelamin' => 'required|in:L,P',
             'tempat_lahir'  => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
-            'alamat'        => 'nullable|string',
+            'alamat'        => 'required|string',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'no_telepon'    => 'required|string|max:20',
             'email'=> 'required|email|unique:karyawans,email',
