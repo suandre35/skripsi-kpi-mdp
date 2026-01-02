@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\TargetKpi;
 use App\Models\IndikatorKpi;
 use App\Models\KategoriKpi;
+use App\Models\PenilaianDetail;
 use App\Models\Divisi;
 
 class TargetKpiController extends Controller
@@ -107,8 +108,10 @@ class TargetKpiController extends Controller
     {
         $target = TargetKpi::findOrFail($id);
         
-        // Opsional: Cek apakah target ini sedang digunakan dalam periode penilaian aktif
-        // Jika tidak ada penilaian detail yang nge-link ke target (biasanya link ke indikator), aman dihapus.
+        $isUsed = PenilaianDetail::where('id_indikator', $target->id_indikator)->exists();
+        if ($isUsed) {
+            return redirect()->back()->with('error', 'Gagal Menghapus! Target ini tidak bisa dihapus karena sudah digunakan dalam perhitungan Realisasi/Penilaian karyawan. Menghapusnya akan merusak skor laporan.');
+        }
         
         $target->delete();
 

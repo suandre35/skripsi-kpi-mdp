@@ -20,13 +20,13 @@ Route::get('/', function () {
 });
 
 Route::get('/tes-notif-sukses', function () {
-    return redirect()->route('target.index')
-        ->with('success', 'Target KPI berhasil ditambahkan!');
+    return redirect()->route('penilaian.index')
+        ->with('success', 'Penilaian telah dihapus!');
 });
 
 Route::get('/tes-notif-error', function () {
-    return redirect()->route('bobot.index')
-        ->with('error', 'Gagal Menghapus! Bobot ini tidak bisa dihapus karena Indikator terkait sudah memiliki riwayat penilaian karyawan. Menghapusnya akan merusak perhitungan laporan.');
+    return redirect()->route('penilaian.index')
+        ->with('error', 'Gagal Menghapus! Periode ini tidak bisa dihapus karena sudah memiliki data Penilaian Karyawan. Menghapusnya akan merusak riwayat laporan.');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])

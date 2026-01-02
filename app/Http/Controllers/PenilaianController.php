@@ -139,7 +139,7 @@ class PenilaianController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('penilaian.index')->with('success', 'Berhasil menyimpan aktivitas!');
+            return redirect()->route('penilaian.index')->with('success', 'Berhasil menyimpan penilaian!');
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -166,7 +166,7 @@ class PenilaianController extends Controller
         try {
             $log = PenilaianDetail::findOrFail($id);
             $log->update(['nilai_input' => $request->nilai_input, 'catatan' => $request->catatan]);
-            return redirect()->route('penilaian.index')->with('success', 'Diperbarui!');
+            return redirect()->route('penilaian.index')->with('success', 'Berhasil memperbarui penilaian!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal update.');
         }
@@ -180,7 +180,7 @@ class PenilaianController extends Controller
         $log = PenilaianDetail::findOrFail($id);
         if ($log->header->id_penilai != Auth::id()) abort(403);
         $log->delete();
-        return redirect()->back()->with('success', 'Dihapus.');
+        return redirect()->back()->with('success', 'Penilaian telah dihapus!');
     }
 
     // ----------------------------------------------------------------------

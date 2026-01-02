@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PeriodeEvaluasi;
+use App\Models\PenilaianHeader;
 
 class PeriodeEvaluasiController extends Controller
 {
@@ -95,9 +96,29 @@ class PeriodeEvaluasiController extends Controller
      */
     public function destroy(string $id)
     {
+        // 1. Cari data Periode
         $periode = PeriodeEvaluasi::findOrFail($id);
-        $periode->delete();
 
-        return redirect()->route('periode.index')->with('success', 'Periode Evaluasi berhasil dihapus!');
+        // 2. SAFETY CHECK (Validasi Integritas Data)
+        // Cek apakah ID Periode ini sudah tercatat di tabel 'penilaian_headers'
+        // Fungsi exists() lebih ringan daripada count() atau get() karena hanya mengembalikan true/false
+        $sedangDigunakan = PenilaianHeader::where('id_periode', $periode->id_periode)->exists();
+
+        if ($sedangDigunakan) {
+            // JIKA SUDAH DIPAKAI: Batalkan hapus, kembalikan user dengan pesan Error (Merah)
+            return redirect()->back()->with('error', 'Gagal Menghapus! Periode ini tidak bisa dihapus karena sudah memiliki data Penilaian Karyawan. Menghapusnya akan merusak riwayat laporan.');
+        }
+
+        // 3. EKSEKUSI HAPUS (Hanya jika aman)
+        try {
+            $periode->delete();
+
+            return redirect()->route('periode.index')
+                ->with('success', 'Periode Evaluasi berhasil dihapus permanen.');
+
+        } catch (QueryException $e) {
+            // Jaga-jaga jika ada error database lain (misal Foreign Key constraint di level database)
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem: Data tidak dapat dihapus.');
+        }
     }
 }
