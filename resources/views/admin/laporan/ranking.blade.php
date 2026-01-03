@@ -22,16 +22,21 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-12 print:p-0 print:m-0">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6 print:max-w-none print:px-0">
 
-            {{-- HEADER CETAK --}}
+            {{-- HEADER KHUSUS CETAK --}}
             <div class="hidden print-show text-center border-b-2 border-black pb-4 mb-6">
-                <h1 class="text-2xl font-bold uppercase">Laporan Peringkat Kinerja Pegawai</h1>
-                <p class="text-sm">Dicetak pada: {{ date('d F Y') }}</p>
+                <h1 class="text-2xl font-bold uppercase tracking-wide">Laporan Peringkat Kinerja Pegawai</h1>
+                <div class="flex justify-center gap-4 text-sm mt-2">
+                    <p>Periode: <strong>{{ $selectedPeriode ? $periodes->where('id_periode', $selectedPeriode)->first()->nama_periode : 'Semua Periode' }}</strong></p>
+                    <p>|</p>
+                    <p>Divisi: <strong>{{ $selectedDivisi ? $divisis->where('id_divisi', $selectedDivisi)->first()->nama_divisi : 'Semua Divisi' }}</strong></p>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Dicetak pada: {{ date('d F Y H:i') }}</p>
             </div>
 
-            {{-- VISUAL PODIUM (Hanya Tampil di Halaman 1) --}}
+            {{-- VISUAL PODIUM (Hanya Tampil di Halaman 1 & Tidak diprint) --}}
             @if($ranking->currentPage() == 1 && $ranking->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mb-8 no-print">
                 {{-- JUARA 2 --}}
@@ -91,14 +96,14 @@
             @endif
 
             {{-- MAIN CARD --}}
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 print:shadow-none print:border-none">
                 
-                {{-- TOOLBAR --}}
+                {{-- TOOLBAR (Filter & Button) --}}
                 <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col lg:flex-row gap-4 justify-between items-center no-print bg-gray-50/50 dark:bg-gray-700/50">
                     <form method="GET" action="{{ route('admin.ranking.index') }}" class="w-full flex flex-col md:flex-row gap-4">
                         <div class="relative w-full md:w-64">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Periode</label>
-                            <select name="id_periode" onchange="this.form.submit()" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                            <select name="id_periode" onchange="this.form.submit()" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white cursor-pointer">
                                 @foreach($periodes as $p)
                                     <option value="{{ $p->id_periode }}" {{ $selectedPeriode == $p->id_periode ? 'selected' : '' }}>
                                         {{ $p->nama_periode }}
@@ -108,7 +113,7 @@
                         </div>
                         <div class="relative w-full md:w-64">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Divisi</label>
-                            <select name="id_divisi" onchange="this.form.submit()" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                            <select name="id_divisi" onchange="this.form.submit()" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white cursor-pointer">
                                 <option value="">Semua Divisi</option>
                                 @foreach($divisis as $d)
                                     <option value="{{ $d->id_divisi }}" {{ $selectedDivisi == $d->id_divisi ? 'selected' : '' }}>
@@ -124,85 +129,62 @@
                     </button>
                 </div>
 
-                {{-- LEGEND --}}
-                <div class="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex flex-wrap gap-4 items-center justify-center sm:justify-start text-xs">
-                    <span class="font-bold text-gray-500 uppercase tracking-wide mr-2">Grade:</span>
+                {{-- LEGEND STATUS KINERJA (Revisi) --}}
+                <div class="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex flex-wrap gap-4 items-center justify-center sm:justify-start text-xs print:border-b print:border-black">
+                    <span class="font-bold text-gray-500 uppercase tracking-wide mr-2 print:text-black">Keterangan:</span>
                     
-                    {{-- Grade SS --}}
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-700 border border-pink-200">SS</span> 
-                        <span>(> 120)</span>
+                    {{-- Excellent --}}
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex w-2.5 h-2.5 bg-blue-500 rounded-full ring-2 ring-blue-100 dark:ring-blue-900 print:ring-0 print:border print:border-black"></span>
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300 print:text-black">Excellent (≥ 100)</span>
                     </div>
-
-                    {{-- Grade S --}}
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">S</span> 
-                        <span>(100-120)</span>
+                    {{-- Sangat Baik --}}
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-green-100 dark:ring-green-900 print:ring-0 print:border print:border-black"></span>
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300 print:text-black">Sangat Baik (85-99)</span>
                     </div>
-
-                    {{-- Grade A --}}
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 border border-green-200">A</span> 
-                        <span>(90-100)</span>
+                    {{-- Baik --}}
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex w-2.5 h-2.5 bg-yellow-400 rounded-full ring-2 ring-yellow-100 dark:ring-yellow-900 print:ring-0 print:border print:border-black"></span>
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300 print:text-black">Baik (70-84)</span>
                     </div>
-                    
-                    {{-- Grade B --}}
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">B</span> 
-                        <span>(80-89)</span>
-                    </div>
-
-                    {{-- Grade C --}}
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">C</span> 
-                        <span>(70-79)</span>
-                    </div>
-
-                    {{-- Grade D --}}
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200">D</span> 
-                        <span>(60-69)</span>
-                    </div>
-
-                    {{-- Grade E --}}
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">E</span> 
-                        <span>(< 60)</span>
+                    {{-- Kurang --}}
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-red-100 dark:ring-red-900 print:ring-0 print:border print:border-black"></span>
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300 print:text-black">Kurang (< 70)</span>
                     </div>
                 </div>
 
                 {{-- TABEL DATA --}}
-                <div class="relative overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400 border-b dark:border-gray-700">
+                <div class="relative overflow-x-auto print:overflow-visible">
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 print:text-black">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400 border-b dark:border-gray-700 print:bg-gray-200 print:text-black print:border-black">
                             <tr>
-                                <th scope="col" class="px-6 py-4 w-16 text-center">Rank</th>
-                                <th scope="col" class="px-6 py-4">Nama Pegawai</th>
-                                <th scope="col" class="px-6 py-4">Divisi</th>
-                                <th scope="col" class="px-6 py-4 w-1/3">Total Skor</th>
-                                <th scope="col" class="px-6 py-4 text-center">Grade</th>
+                                <th scope="col" class="px-6 py-4 w-16 text-center print:border print:border-black print:px-2">Rank</th>
+                                <th scope="col" class="px-6 py-4 print:border print:border-black print:px-2">Nama Pegawai</th>
+                                <th scope="col" class="px-6 py-4 print:border print:border-black print:px-2">Divisi</th>
+                                <th scope="col" class="px-6 py-4 w-1/3 print:border print:border-black print:px-2">Total Skor</th>
+                                <th scope="col" class="px-6 py-4 text-center print:border print:border-black print:px-2">Status Kinerja</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700 print:divide-black">
                             @forelse($ranking as $index => $data)
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition print:bg-transparent print:border-black">
                                 
                                 {{-- Kolom Rank --}}
-                                <td class="px-6 py-4 text-center">
+                                <td class="px-6 py-4 text-center print:border print:border-black print:px-2">
                                     @php
                                         $absoluteRank = ($ranking->currentPage() - 1) * $ranking->perPage() + $loop->iteration;
                                     @endphp
-                                    @if($absoluteRank == 1) <span class="text-2xl">🥇</span> 
-                                    @elseif($absoluteRank == 2) <span class="text-2xl">🥈</span> 
-                                    @elseif($absoluteRank == 3) <span class="text-2xl">🥉</span> 
-                                    @else <span class="font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">{{ $absoluteRank }}</span> 
-                                    @endif
+                                    <span class="font-bold {{ $absoluteRank <= 3 ? 'text-blue-600 text-base' : 'text-gray-500' }} print:text-black">
+                                        #{{ $absoluteRank }}
+                                    </span>
                                 </td>
 
                                 {{-- Kolom Nama --}}
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4 print:border print:border-black print:px-2">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 flex-shrink-0">
+                                        <div class="w-10 h-10 flex-shrink-0 print:hidden">
                                             @if(isset($data['foto']) && Storage::disk('public')->exists($data['foto']))
                                                 <img class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm" 
                                                      src="{{ asset('storage/' . $data['foto']) }}" 
@@ -214,67 +196,77 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <span class="block font-bold text-gray-900 dark:text-white">{{ $data['nama'] }}</span>
-                                            <span class="text-xs text-gray-500">{{ $data['nik'] }}</span>
+                                            <span class="block font-bold text-gray-900 dark:text-white print:text-black">{{ $data['nama'] }}</span>
+                                            <span class="text-xs text-gray-500 print:text-black">{{ $data['nik'] }}</span>
                                         </div>
                                     </div>
                                 </td>
 
                                 {{-- Kolom Divisi --}}
-                                <td class="px-6 py-4">
-                                    <span class="text-gray-700 dark:text-gray-300 font-medium bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded border border-gray-200 dark:border-gray-600">
+                                <td class="px-6 py-4 print:border print:border-black print:px-2">
+                                    <span class="text-gray-700 dark:text-gray-300 font-medium bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded border border-gray-200 dark:border-gray-600 print:bg-transparent print:border-none print:p-0 print:text-black">
                                         {{ $data['divisi'] }}
                                     </span>
                                 </td>
 
-                                {{-- Kolom Progress --}}
-                                <td class="px-6 py-4 align-middle">
+                                {{-- Kolom Progress Skor --}}
+                                <td class="px-6 py-4 align-middle print:border print:border-black print:px-2">
                                     <div class="flex items-center gap-4">
-                                        <span class="text-base font-black text-blue-600 dark:text-blue-400 w-12 text-right">
-                                            {{ number_format($data['skor'], 1) }}
+                                        <span class="text-base font-black text-blue-600 dark:text-blue-400 w-12 text-right print:text-black print:w-auto">
+                                            {{ number_format($data['skor'], 2) }}
                                         </span>
-                                        <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 overflow-hidden shadow-inner">
+                                        {{-- Progress Bar (Hide on print to save ink, or keep simple) --}}
+                                        <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 overflow-hidden shadow-inner print:hidden">
                                             @php
                                                 $width = min($data['skor'], 100);
-                                                if($data['skor'] > 100) $width = 100; // Cap width visual at 100%
-
                                                 $colorClass = 'bg-blue-600'; 
-                                                if($data['skor'] > 120) $colorClass = 'bg-pink-500'; // SS
-                                                elseif($data['skor'] >= 100) $colorClass = 'bg-purple-600'; // S
-                                                elseif($data['skor'] >= 90) $colorClass = 'bg-green-500'; // A
-                                                elseif($data['skor'] < 60) $colorClass = 'bg-red-500';
-                                                elseif($data['skor'] < 70) $colorClass = 'bg-orange-500';
-                                                elseif($data['skor'] < 80) $colorClass = 'bg-yellow-400';
+                                                if($data['skor'] >= 100) $colorClass = 'bg-blue-500'; // Excellent
+                                                elseif($data['skor'] >= 85) $colorClass = 'bg-green-500'; // Sangat Baik
+                                                elseif($data['skor'] >= 70) $colorClass = 'bg-yellow-400'; // Baik
+                                                else $colorClass = 'bg-red-500'; // Kurang
                                             @endphp
                                             <div class="{{ $colorClass }} h-3 rounded-full transition-all duration-1000 ease-out" style="width: {{ $width }}%"></div>
                                         </div>
                                     </div>
                                 </td>
 
-                                {{-- Kolom Grade --}}
-                                <td class="px-6 py-4 text-center">
+                                {{-- Kolom Status Kinerja (Revisi) --}}
+                                <td class="px-6 py-4 text-center print:border print:border-black print:px-2">
                                     @php
-                                        $grade = $data['grade'];
-                                        $badgeClass = 'bg-gray-100 text-gray-600 border-gray-200';
-                                        
-                                        if($grade == 'SS') $badgeClass = 'bg-pink-100 text-pink-700 border-pink-200';
-                                        elseif($grade == 'S') $badgeClass = 'bg-purple-100 text-purple-700 border-purple-200';
-                                        elseif($grade == 'A') $badgeClass = 'bg-green-100 text-green-700 border-green-200';
-                                        elseif($grade == 'B') $badgeClass = 'bg-blue-100 text-blue-700 border-blue-200';
-                                        elseif($grade == 'C') $badgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
-                                        elseif($grade == 'D') $badgeClass = 'bg-orange-100 text-orange-700 border-orange-200';
-                                        elseif($grade == 'E') $badgeClass = 'bg-red-100 text-red-700 border-red-200';
+                                        $skor = $data['skor'];
+                                        $statusLabel = '';
+                                        $badgeClass = '';
+
+                                        if ($skor >= 100) {
+                                            $statusLabel = 'Excellent';
+                                            $badgeClass = 'bg-blue-100 text-blue-700 border-blue-200';
+                                        } elseif ($skor >= 85) {
+                                            $statusLabel = 'Sangat Baik';
+                                            $badgeClass = 'bg-green-100 text-green-700 border-green-200';
+                                        } elseif ($skor >= 70) {
+                                            $statusLabel = 'Baik';
+                                            $badgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+                                        } else {
+                                            $statusLabel = 'Kurang';
+                                            $badgeClass = 'bg-red-100 text-red-700 border-red-200';
+                                        }
                                     @endphp
-                                    <div class="flex items-center justify-center">
+                                    
+                                    {{-- Tampilan Layar: Badge --}}
+                                    <div class="flex items-center justify-center print:hidden">
                                         <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $badgeClass }}">
-                                            {{ $grade }}
+                                            {{ $statusLabel }}
                                         </span>
                                     </div>
+                                    {{-- Tampilan Cetak: Teks Biasa --}}
+                                    <span class="hidden print:inline text-xs font-bold uppercase text-black">
+                                        {{ $statusLabel }}
+                                    </span>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-16 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="5" class="px-6 py-16 text-center text-gray-500 dark:text-gray-400 border border-gray-200 print:border-black">
                                     Data tidak ditemukan.
                                 </td>
                             </tr>
@@ -284,7 +276,7 @@
                 </div>
 
                 {{-- PAGINATION --}}
-                <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl no-print">
                     {{ $ranking->links() }}
                 </div>
 
@@ -296,17 +288,25 @@
     <style>
         @media print {
             @page { margin: 1cm; size: A4; }
-            body { background-color: white !important; font-family: sans-serif; -webkit-print-color-adjust: exact; }
+            body { background-color: white !important; font-family: sans-serif; -webkit-print-color-adjust: exact; margin: 0; padding: 0; }
             .no-print, header, nav, aside { display: none !important; }
             .print-show { display: block !important; }
+            
+            /* Reset Containers */
             .py-12 { padding: 0 !important; margin: 0 !important; }
-            .max-w-7xl { max-width: 100% !important; }
+            .max-w-7xl { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .bg-white, .dark\:bg-gray-800 { background: transparent !important; box-shadow: none !important; border: none !important; }
+            
+            /* Table Styling */
             table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 11px; }
-            th { background-color: #f3f3f3 !important; font-weight: bold; }
-            .w-full.bg-gray-200 { border: 1px solid #000; background: white !important; }
-            .h-2\.5, .h-3 { height: 10px !important; }
-            .bg-green-500, .bg-blue-600, .bg-yellow-400, .bg-red-500, .bg-purple-600, .bg-pink-500, .bg-orange-500 { -webkit-print-color-adjust: exact; }
+            th, td { border: 1px solid #000 !important; padding: 6px 8px !important; font-size: 11px; color: black !important; }
+            thead th { background-color: #f0f0f0 !important; font-weight: bold; text-transform: uppercase; }
+            
+            /* Text Visibility */
+            .text-gray-500, .text-gray-900, .text-blue-600 { color: black !important; }
+            
+            /* Ensure Colors for Legend if needed */
+            .bg-blue-500, .bg-green-500, .bg-yellow-400, .bg-red-500 { -webkit-print-color-adjust: exact; border: 1px solid #000; }
         }
     </style>
 </x-app-layout>

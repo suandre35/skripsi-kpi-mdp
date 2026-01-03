@@ -1,4 +1,5 @@
 <x-app-layout>
+    {{-- HIDE HEADER BAWAAN LAYOUT SAAT PRINT --}}
     <x-slot name="header">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between no-print">
             <h2 class="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
@@ -22,8 +23,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-12 print:p-0">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 print:max-w-none print:m-0 print:px-0">
             
             {{-- TOMBOL NAVIGASI (Hanya di Layar) --}}
             <div class="mb-6 flex justify-between items-center no-print">
@@ -37,90 +38,104 @@
                 </button>
             </div>
 
-            {{-- LEMBAR RAPOR (Card Utama) --}}
-            <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 print-border">
+            {{-- LEMBAR RAPOR --}}
+            <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 print:shadow-none print:border-none print:rounded-none">
                 
-                {{-- HEADER LAPORAN (Gradient Blue) --}}
-                <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white print-header">
+                {{-- HEADER LAPORAN --}}
+                {{-- Tampilan Layar: Gradient Blue --}}
+                {{-- Tampilan Print: Putih Bersih (Kop Surat) --}}
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white print:bg-none print:text-black print:p-0 print:mb-6 print:border-b-2 print:border-black">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                         <div>
-                            <h4 class="text-blue-100 uppercase tracking-widest text-xs font-bold mb-1">Laporan Evaluasi Kinerja</h4>
-                            <h1 class="text-3xl font-bold">{{ $karyawan->nama_lengkap }}</h1>
-                            <p class="text-blue-100 mt-1 opacity-90">{{ $karyawan->nik }} | {{ $karyawan->divisi->nama_divisi }}</p>
+                            <h4 class="text-blue-100 uppercase tracking-widest text-xs font-bold mb-1 print:text-gray-500">Laporan Evaluasi Kinerja</h4>
+                            <h1 class="text-3xl font-bold print:text-4xl print:uppercase">{{ $karyawan->nama_lengkap }}</h1>
+                            <div class="flex items-center gap-2 mt-1 text-blue-100 print:text-black">
+                                <span class="font-mono">{{ $karyawan->nik }}</span>
+                                <span class="print:hidden">|</span>
+                                <span class="hidden print:inline px-2">•</span>
+                                <span>{{ $karyawan->divisi->nama_divisi }}</span>
+                            </div>
                         </div>
                         
                         {{-- Kotak Skor Utama --}}
-                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 text-center min-w-[150px]">
-                            <p class="text-xs uppercase tracking-wide font-bold opacity-80">Total Skor</p>
-                            <p class="text-4xl font-black mt-1">{{ number_format($dataRapor['total_skor_akhir'], 2) }}</p>
+                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 text-center min-w-[150px] print:border-2 print:border-black print:bg-transparent print:p-2">
+                            <p class="text-xs uppercase tracking-wide font-bold opacity-80 print:opacity-100 print:text-black">Total Skor</p>
+                            <p class="text-4xl font-black mt-1 print:text-black">{{ number_format($dataRapor['total_skor_akhir'], 2) }}</p>
                         </div>
                     </div>
                     
                     {{-- Badge Periode --}}
-                    <div class="mt-6 flex items-center gap-2 text-sm font-medium bg-white/10 w-fit px-3 py-1 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        Periode: {{ $periode->nama_periode }}
+                    <div class="mt-6 flex items-center gap-2 text-sm font-medium bg-white/10 w-fit px-3 py-1 rounded-full print:bg-transparent print:p-0 print:mt-2 print:text-gray-600">
+                        <svg class="w-4 h-4 print:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        Periode Penilaian: <span class="font-bold">{{ $periode->nama_periode }}</span>
                     </div>
                 </div>
 
                 {{-- KONTEN DETAIL --}}
-                <div class="p-8">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <div class="p-8 print:p-0">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2 print:hidden">
                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         Rincian Indikator KPI
                     </h3>
+                    <h3 class="hidden print:block text-sm font-bold uppercase border-b border-black pb-1 mb-2">Rincian Indikator KPI</h3>
 
-                    <div class="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700/50">
+                    {{-- Wrapper Table: Hapus overflow saat print agar tidak terpotong --}}
+                    <div class="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg print:overflow-visible print:border-none print:rounded-none">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 print:border-collapse print:w-full">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50 print:bg-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Indikator</th>
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Target</th>
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Realisasi</th>
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Capaian</th>
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bobot</th>
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-100 dark:bg-gray-700">Skor</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider print:text-black print:border print:border-black print:px-2 print:py-1">Indikator</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider print:text-black print:border print:border-black print:px-2 print:py-1">Target</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider print:text-black print:border print:border-black print:px-2 print:py-1">Realisasi</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider print:text-black print:border print:border-black print:px-2 print:py-1">Capaian</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider print:text-black print:border print:border-black print:px-2 print:py-1">Bobot</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-100 dark:bg-gray-700 print:text-black print:bg-gray-200 print:border print:border-black print:px-2 print:py-1">Skor</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach($dataRapor['detail'] as $item)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                                <tr class="print:break-inside-avoid">
                                     {{-- Indikator --}}
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm font-bold text-gray-900 dark:text-white">{{ $item['indikator'] }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $item['kategori'] }}</div>
+                                    <td class="px-6 py-4 print:border print:border-black print:px-2 print:py-2">
+                                        <div class="text-sm font-bold text-gray-900 dark:text-white print:text-black">{{ $item['indikator'] }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 print:text-gray-600">{{ $item['kategori'] }}</div>
                                     </td>
                                     
                                     {{-- Target --}}
-                                    <td class="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                    <td class="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 print:border print:border-black print:text-black print:px-2 print:py-2">
                                         {{ number_format($item['target'], 0, ',', '.') }} <span class="text-xs text-gray-500">{{ $item['satuan'] }}</span>
                                     </td>
 
                                     {{-- Realisasi --}}
-                                    <td class="px-6 py-4 text-center whitespace-nowrap text-sm font-bold text-blue-600 dark:text-blue-400">
+                                    <td class="px-6 py-4 text-center whitespace-nowrap text-sm font-bold text-blue-600 dark:text-blue-400 print:border print:border-black print:text-black print:px-2 print:py-2">
                                         {{ number_format($item['realisasi'], 0, ',', '.') }}
                                     </td>
 
-                                    {{-- Capaian --}}
-                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    {{-- Capaian (Badge) --}}
+                                    <td class="px-6 py-4 text-center whitespace-nowrap print:border print:border-black print:px-2 print:py-2">
                                         @php
                                             $capaian = $item['pencapaian'];
                                             $badgeClass = $capaian >= 100 ? 'bg-green-100 text-green-800 border-green-200' :
                                                          ($capaian >= 80 ? 'bg-blue-100 text-blue-800 border-blue-200' :
                                                          ($capaian >= 50 ? 'bg-yellow-100 text-yellow-800 border-yellow-200' : 'bg-red-100 text-red-800 border-red-200'));
                                         @endphp
-                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border {{ $badgeClass }}">
+                                        {{-- Tampilan Layar: Badge Warna --}}
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border {{ $badgeClass }} print:hidden">
+                                            {{ number_format($capaian, 1) }}%
+                                        </span>
+                                        {{-- Tampilan Print: Teks Biasa (Hemat Tinta) --}}
+                                        <span class="hidden print:inline text-sm font-bold text-black">
                                             {{ number_format($capaian, 1) }}%
                                         </span>
                                     </td>
 
                                     {{-- Bobot --}}
-                                    <td class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 print:border print:border-black print:text-black print:px-2 print:py-2">
                                         {{ $item['bobot'] }}%
                                     </td>
 
                                     {{-- Skor --}}
-                                    <td class="px-6 py-4 text-center font-bold text-sm bg-gray-50 dark:bg-gray-700/30 text-gray-900 dark:text-white">
+                                    <td class="px-6 py-4 text-center font-bold text-sm bg-gray-50 dark:bg-gray-700/30 text-gray-900 dark:text-white print:bg-transparent print:border print:border-black print:text-black print:px-2 print:py-2">
                                         {{ number_format($item['skor'], 2) }}
                                     </td>
                                 </tr>
@@ -128,10 +143,10 @@
                             </tbody>
                             
                             {{-- Footer Tabel (Total) --}}
-                            <tfoot class="bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 font-bold">
+                            <tfoot class="bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 font-bold print:bg-white print:border-t-2 print:border-black">
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-right text-gray-700 dark:text-gray-300 uppercase text-xs tracking-wider">Total Skor Akhir</td>
-                                    <td class="px-6 py-4 text-center text-lg text-blue-700 dark:text-blue-300">
+                                    <td colspan="5" class="px-6 py-4 text-right text-gray-700 dark:text-gray-300 uppercase text-xs tracking-wider print:text-black print:border print:border-black print:px-2">Total Skor Akhir</td>
+                                    <td class="px-6 py-4 text-center text-lg text-blue-700 dark:text-blue-300 print:text-black print:border print:border-black print:px-2">
                                         {{ number_format($dataRapor['total_skor_akhir'], 2) }}
                                     </td>
                                 </tr>
@@ -140,58 +155,58 @@
                     </div>
 
                     {{-- AREA TANDA TANGAN (Hanya Muncul Saat Print) --}}
-                    <div class="hidden print-show mt-16 pt-10">
-                        <div class="flex justify-between text-center">
+                    <div class="hidden print-show mt-16 pt-10 break-inside-avoid">
+                        <div class="flex justify-between text-center px-10">
                             <div class="w-1/3">
                                 <p class="mb-20 text-sm">Karyawan,</p>
                                 <p class="font-bold underline">{{ $karyawan->nama_lengkap }}</p>
+                                <p class="text-xs text-gray-500">NIK. {{ $karyawan->nik }}</p>
                             </div>
                             <div class="w-1/3">
-                                <p class="mb-20 text-sm">Mengetahui (HRD/Manajer),</p>
+                                <p class="mb-20 text-sm">Palembang, {{ date('d F Y') }} <br> Mengetahui (Manajer),</p>
                                 <p class="font-bold underline">_______________________</p>
                             </div>
                         </div>
-                        <div class="mt-8 text-center text-xs text-gray-400 border-t border-gray-300 pt-2">
-                            Dicetak otomatis dari Sistem KPI pada {{ date('d F Y H:i') }}
+                        <div class="mt-8 text-center text-[10px] text-gray-400 border-t border-black pt-2">
+                            Dokumen ini dicetak otomatis dari Sistem KPI pada {{ date('d F Y H:i') }}
                         </div>
                     </div>
 
                 </div>
             </div>
 
-            {{-- CSS KHUSUS CETAK --}}
+            {{-- CSS KHUSUS CETAK (STRICT) --}}
             <style>
                 @media print {
+                    /* Reset Halaman */
                     @page { margin: 1cm; size: A4; }
-                    body { margin: 1.6cm; background: white; color: black; -webkit-print-color-adjust: exact; }
+                    body { background: white !important; margin: 0; padding: 0; color: black !important; }
+                    
+                    /* Sembunyikan Elemen UI */
                     .no-print, header, nav, aside { display: none !important; }
                     .print-show { display: block !important; }
                     
-                    /* Reset Shadow & Background */
-                    .bg-white, .dark\:bg-gray-800 { background: white !important; color: black !important; }
-                    .shadow-xl, .shadow { box-shadow: none !important; }
-                    .border { border-color: #ddd !important; }
+                    /* Layout Reset */
+                    .py-12 { padding: 0 !important; }
+                    .max-w-5xl { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
                     
-                    /* Header Gradient fix for print (Fallback ke Grey scale agar hemat tinta) */
-                    .print-header { 
-                        background: #f3f4f6 !important; 
+                    /* Background Reset */
+                    .bg-white, .dark\:bg-gray-800 { background: transparent !important; box-shadow: none !important; border: none !important; }
+                    
+                    /* Table Styling yang Tegas */
+                    table { width: 100% !important; border-collapse: collapse !important; }
+                    th, td { border: 1px solid #000 !important; color: black !important; page-break-inside: avoid; }
+                    thead th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
+                    
+                    /* Pastikan teks terbaca */
+                    .text-gray-500, .text-gray-400, .text-blue-100 { color: #000 !important; opacity: 1 !important; }
+                    
+                    /* Hapus Badge Warna saat Print agar hemat tinta */
+                    .bg-green-100, .bg-blue-100, .bg-yellow-100, .bg-red-100 { 
+                        background: transparent !important; 
+                        border: none !important; 
                         color: black !important; 
-                        border-bottom: 2px solid #000;
-                        padding: 20px !important;
                     }
-                    .print-header h1, .print-header h4, .print-header p { color: black !important; opacity: 1 !important; }
-                    .print-header .border-white\/20 { border-color: #000 !important; } /* Border kotak skor */
-                    
-                    /* Table Styling */
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 12px; }
-                    th { background-color: #eee !important; font-weight: bold; }
-                    
-                    /* Force Badge Colors */
-                    .bg-green-100 { background-color: #dcfce7 !important; border: 1px solid #000; }
-                    .bg-blue-100 { background-color: #dbeafe !important; border: 1px solid #000; }
-                    .bg-yellow-100 { background-color: #fef9c3 !important; border: 1px solid #000; }
-                    .bg-red-100 { background-color: #fee2e2 !important; border: 1px solid #000; }
                 }
             </style>
 

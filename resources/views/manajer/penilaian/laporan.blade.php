@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h2 class="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
-                {{ __('Rapor Kinerja Tim') }}
+                {{ __('Laporan Evaluasi') }}
             </h2>
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -14,7 +14,7 @@
                             <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
                             </svg>
-                            <span class="ml-1 text-sm font-medium text-gray-800 dark:text-gray-100">Rapor Kinerja</span>
+                            <span class="ml-1 text-sm font-medium text-gray-800 dark:text-gray-100">Laporan Divisi</span>
                         </div>
                     </li>
                 </ol>
@@ -110,6 +110,32 @@
                             </div>
                         @endif
                     </form>
+                </div>
+
+                {{-- LEGEND INFO (BARU) --}}
+                <div class="px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex flex-wrap gap-4 items-center justify-center sm:justify-start text-xs">
+                    <span class="font-bold text-gray-500 uppercase tracking-wide mr-2">Status Kinerja:</span>
+                    
+                    {{-- Excellent --}}
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex w-2.5 h-2.5 bg-blue-600 rounded-full ring-2 ring-blue-100 dark:ring-blue-900"></span>
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Excellent (≥ 100)</span>
+                    </div>
+                    {{-- Sangat Baik --}}
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-emerald-100 dark:ring-emerald-900"></span>
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Sangat Baik (85-99)</span>
+                    </div>
+                    {{-- Cukup --}}
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex w-2.5 h-2.5 bg-yellow-400 rounded-full ring-2 ring-yellow-100 dark:ring-yellow-900"></span>
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Cukup (70-84)</span>
+                    </div>
+                    {{-- Perlu Perbaikan --}}
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-red-100 dark:ring-red-900"></span>
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Perlu Perbaikan (< 70)</span>
+                    </div>
                 </div>
 
                 {{-- TABEL ANGGOTA TIM --}}

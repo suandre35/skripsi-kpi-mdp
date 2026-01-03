@@ -21,7 +21,7 @@ Route::get('/', function () {
 
 Route::get('/tes-notif-sukses', function () {
     return redirect()->route('penilaian.index')
-        ->with('success', 'Penilaian telah dihapus!');
+        ->with('penilaian.index')->with('success', 'Penilaian telah dihapus!');
 });
 
 Route::get('/tes-notif-error', function () {

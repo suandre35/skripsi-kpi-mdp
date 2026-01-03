@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between no-print">
             <h2 class="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
-                {{ __('Rapor Kinerja Individu') }}
+                {{ __('Laporan Kinerja Individu') }}
             </h2>
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -10,7 +10,7 @@
                         <a href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
                     <li class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400">
-                        <a href="{{ route('penilaian.laporan') }}">Rapor Tim</a>
+                        <a href="{{ route('penilaian.laporan') }}">Laporan Tim</a>
                     </li>
                     <li aria-current="page">
                         <div class="flex items-center">
