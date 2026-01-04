@@ -106,8 +106,8 @@ class KaryawanController extends Controller
             'alamat'        => 'nullable|string',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'no_telepon'    => 'required|string|max:20',
-            'email'=> 'required|email|unique:karyawans,email',
-            'status'        => 'required|boolean', // Validasi Boolean
+            'email'         => 'required|email|unique:karyawans,email,'.$karyawan->id_karyawan.',id_karyawan',
+            'status'        => 'required|boolean', 
         ]);
 
         $data = $request->except(['foto']);
