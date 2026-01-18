@@ -94,7 +94,6 @@
                             <h3 class="text-lg font-bold text-gray-800 dark:text-white">Feed Penilaian Terbaru</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Daftar formulir penilaian yang baru saja disubmit oleh Manajer.</p>
                         </div>
-                        <a href="{{ route('penilaian.laporan') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Lihat Semua Laporan &rarr;</a>
                     </div>
                     
                     <div class="overflow-x-auto">
