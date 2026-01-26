@@ -139,17 +139,17 @@ class LaporanHrdController extends Controller
      */
     public function ranking(Request $request)
     {
-        $periodes = PeriodeEvaluasi::all();
+        // Ambil semua periode berurutan
+        $periodes = PeriodeEvaluasi::orderBy('id_periode', 'asc')->get();
         $divisis = Divisi::where('status', true)->get();
 
         $periodeAktif = PeriodeEvaluasi::where('status', true)->first();
-        $selectedPeriode = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : null);
+        // Default ke periode aktif, atau periode terakhir jika tidak ada aktif
+        $selectedPeriodeId = $request->id_periode ?? ($periodeAktif ? $periodeAktif->id_periode : ($periodes->last()->id_periode ?? null));
         $selectedDivisi = $request->id_divisi ?? null;
 
         // Query Dasar Karyawan Aktif
         $query = Karyawan::with('divisi')->where('status', true);
-
-        // Filter Role Karyawan Only
         $query->whereHas('user', function($q) {
             $q->where('role', 'Karyawan'); 
         });
@@ -160,43 +160,48 @@ class LaporanHrdController extends Controller
 
         $karyawans = $query->get();
 
-        // Hitung Skor & Mapping Data
-        $rankingCollection = $karyawans->map(function($karyawan) use ($selectedPeriode) {
-            $skor = $selectedPeriode ? $this->hitungSkor($karyawan->id_karyawan, $selectedPeriode, $karyawan->id_divisi) : 0;
+        // Siapkan Array untuk menyimpan data ranking
+        $rankingCollection = $karyawans->map(function($karyawan) use ($selectedPeriodeId, $periodes) {
             
-            // LOGIKA GRADE BARU (SS, S, A, B, C, D, E)
-            $grade = 'E';
+            // 1. Hitung Skor Periode Terpilih (Untuk Ranking Utama)
+            $skorSaatIni = $selectedPeriodeId ? $this->hitungSkor($karyawan->id_karyawan, $selectedPeriodeId, $karyawan->id_divisi) : 0;
             
-            if ($skor > 120) {
-                $grade = 'SS';
-            } elseif ($skor >= 100) {
-                $grade = 'S';
-            } elseif ($skor >= 90) {
-                $grade = 'A';
-            } elseif ($skor >= 80) {
-                $grade = 'B';
-            } elseif ($skor >= 70) {
-                $grade = 'C';
-            } elseif ($skor >= 60) {
-                $grade = 'D';
-            } else {
-                $grade = 'E';
+            // 2. Hitung History Skor (Dari Awal s/d Periode Terpilih)
+            // Kita loop semua periode yang ID-nya <= ID periode terpilih (asumsi ID urut waktu)
+            $historySkor = [];
+            foreach ($periodes as $p) {
+                // Hanya ambil data sampai periode yang dipilih
+                if ($p->id_periode <= $selectedPeriodeId) {
+                    $val = $this->hitungSkor($karyawan->id_karyawan, $p->id_periode, $karyawan->id_divisi);
+                    $historySkor[] = $val;
+                }
             }
+
+            // Tentukan Grade (Logika Lama)
+            $grade = 'E';
+            if ($skorSaatIni > 120) $grade = 'SS';
+            elseif ($skorSaatIni >= 100) $grade = 'S';
+            elseif ($skorSaatIni >= 90) $grade = 'A';
+            elseif ($skorSaatIni >= 80) $grade = 'B';
+            elseif ($skorSaatIni >= 70) $grade = 'C';
+            elseif ($skorSaatIni >= 60) $grade = 'D';
+            else $grade = 'E';
 
             return [
                 'nama' => $karyawan->nama_lengkap,
-                'foto' => $karyawan->foto, // Pastikan foto terambil
+                'foto' => $karyawan->foto,
                 'nik' => $karyawan->nik,
                 'divisi' => $karyawan->divisi->nama_divisi ?? '-',
-                'skor' => $skor,
-                'grade' => $grade
+                'skor' => $skorSaatIni,
+                'grade' => $grade,
+                'history' => $historySkor // <--- Data Baru untuk Grafik
             ];
         });
 
         // Urutkan dari Skor Tertinggi
         $sortedRanking = $rankingCollection->sortByDesc('skor')->values();
 
-        // --- MANUAL PAGINATION ---
+        // Pagination Manual
         $perPage = 10; 
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $currentItems = $sortedRanking->slice(($currentPage - 1) * $perPage, $perPage)->all();
@@ -206,6 +211,12 @@ class LaporanHrdController extends Controller
             'query' => $request->query(),
         ]);
 
-        return view('admin.laporan.ranking', compact('ranking', 'periodes', 'divisis', 'selectedPeriode', 'selectedDivisi'));
+        return view('admin.laporan.ranking', [
+            'ranking' => $ranking,
+            'periodes' => $periodes,
+            'divisis' => $divisis,
+            'selectedPeriode' => $selectedPeriodeId,
+            'selectedDivisi' => $selectedDivisi
+        ]);
     }
 }

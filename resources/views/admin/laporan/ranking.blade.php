@@ -164,6 +164,7 @@
                                 <th scope="col" class="px-6 py-4 print:border print:border-black print:px-2">Nama Pegawai</th>
                                 <th scope="col" class="px-6 py-4 print:border print:border-black print:px-2">Divisi</th>
                                 <th scope="col" class="px-6 py-4 w-1/3 print:border print:border-black print:px-2">Total Skor</th>
+                                <th scope="col" class="px-6 py-4 w-1/3 print:border print:border-black print:px-2">Grafik Kinerja</th>
                                 <th scope="col" class="px-6 py-4 text-center print:border print:border-black print:px-2">Status Kinerja</th>
                             </tr>
                         </thead>
@@ -227,6 +228,89 @@
                                             @endphp
                                             <div class="{{ $colorClass }} h-3 rounded-full transition-all duration-1000 ease-out" style="width: {{ $width }}%"></div>
                                         </div>
+                                    </div>
+                                </td>
+
+                                {{-- Kolom Grafik Tren (History) --}}
+                                <td class="px-6 py-4 align-middle print:border print:border-black print:px-2">
+                                    <div class="flex flex-col gap-1 w-full">
+                                        
+                                        @php
+                                            $history = $data['history'];
+                                            $count = count($history);
+                                            // Konfigurasi SVG
+                                            $height = 40; // tinggi grafik pixel
+                                            $width = 150; // lebar grafik pixel
+                                            $maxScore = 120; // batas atas sumbu Y
+                                        @endphp
+
+                                        @if($count > 1)
+                                            <div class="relative h-[40px] w-full max-w-[150px] border-b border-l border-gray-300 dark:border-gray-600 print:hidden">
+                                                {{-- Garis Target (100) --}}
+                                                @php $targetY = $height - ((100 / $maxScore) * $height); @endphp
+                                                <div class="absolute w-full border-t border-dashed border-red-300" style="top: {{ $targetY }}px;"></div>
+
+                                                <svg width="100%" height="100%" viewBox="0 0 {{ $width }} {{ $height }}" preserveAspectRatio="none" class="overflow-visible">
+                                                    @php
+                                                        $points = [];
+                                                        $stepX = $width / ($count - 1);
+                                                        
+                                                        foreach($history as $index => $val) {
+                                                            // Koordinat X
+                                                            $x = $index * $stepX;
+                                                            // Koordinat Y (dibalik karena SVG 0 itu di atas)
+                                                            // Clamp value biar ga tembus grafik
+                                                            $clampedVal = min($val, $maxScore); 
+                                                            $y = $height - (($clampedVal / $maxScore) * $height);
+                                                            $points[] = "$x,$y";
+                                                        }
+                                                        $pointsString = implode(' ', $points);
+                                                        
+                                                        // Tentukan warna garis (naik/turun dari periode sebelumnya)
+                                                        $lastScore = end($history);
+                                                        $prevScore = prev($history);
+                                                        $strokeColor = ($lastScore >= $prevScore) ? '#22c55e' : '#ef4444'; // Hijau jika naik/sama, Merah jika turun
+                                                    @endphp
+
+                                                    {{-- Gambar Garis --}}
+                                                    <polyline points="{{ $pointsString }}" fill="none" stroke="{{ $strokeColor }}" stroke-width="2" vector-effect="non-scaling-stroke" />
+
+                                                    {{-- Gambar Titik di setiap periode --}}
+                                                    @foreach($history as $index => $val)
+                                                        @php
+                                                            $x = $index * $stepX;
+                                                            $clampedVal = min($val, $maxScore); 
+                                                            $y = $height - (($clampedVal / $maxScore) * $height);
+                                                        @endphp
+                                                        <circle cx="{{ $x }}" cy="{{ $y }}" r="2" fill="{{ $strokeColor }}" />
+                                                    @endforeach
+                                                </svg>
+                                            </div>
+                                            
+                                            <div class="text-[9px] text-gray-400 mt-1 print:hidden">
+                                                Tren: 
+                                                @if(end($history) > prev($history))
+                                                    <span class="text-green-600 font-bold">Naik ↗</span>
+                                                @elseif(end($history) < prev($history))
+                                                    <span class="text-red-600 font-bold">Turun ↘</span>
+                                                @else
+                                                    <span class="text-gray-500">Stabil -</span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            {{-- Jika Data Cuma 1 Periode --}}
+                                            <div class="text-xs text-gray-400 italic py-2 print:hidden">
+                                                Data belum cukup untuk tren
+                                            </div>
+                                        @endif
+                                        
+                                        {{-- Fallback untuk Cetak --}}
+                                        <div class="hidden print:block text-[10px] text-center">
+                                            @foreach($history as $h)
+                                                <span class="{{ $loop->last ? 'font-bold' : 'text-gray-500' }}">{{ number_format($h,0) }}</span>{{ !$loop->last ? ' → ' : '' }}
+                                            @endforeach
+                                        </div>
+
                                     </div>
                                 </td>
 

@@ -19,102 +19,159 @@ class KpiSimulationSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Buat Periode Evaluasi Q1 2025
-        $periode = PeriodeEvaluasi::create([
-            'nama_periode'    => 'Q1 2025',
-            'tanggal_mulai'   => Carbon::now()->startOfMonth(),
-            'tanggal_selesai' => Carbon::now()->addMonths(2)->endOfMonth(),
-            'pengumuman'      => false,
-            'status'          => true, // Aktif
-        ]);
-
-        $this->command->info("✅ Periode Evaluasi '{$periode->nama_periode}' berhasil dibuat.");
-
-        // 2. Ambil Semua Manajer untuk menjadi Penilai
+        // 1. Ambil Data Master Sekali Saja (Agar hemat query)
+        
+        // Ambil Semua Manajer (Key by ID Divisi)
         $managers = Karyawan::with('user')
             ->whereHas('user', function($q) {
                 $q->where('role', 'Manajer');
-            })->get()->keyBy('id_divisi'); // Key by ID Divisi agar mudah dicari
+            })->get()->keyBy('id_divisi');
 
-        // 3. Ambil Semua Karyawan (Staff)
+        // Ambil Semua Karyawan (Staff)
         $staffs = Karyawan::with('divisi')
             ->whereHas('user', function($q) {
                 $q->where('role', 'Karyawan');
             })->whereNotNull('id_divisi')->get();
 
-        // 4. Ambil Semua Indikator KPI (Eager load Target & Bobot)
+        // Ambil Semua Indikator KPI
         $allKategoris = KategoriKpi::with(['indikators.target'])->get();
+
+        // 2. Definisi Daftar Periode (Q1 2024 s/d Q1 2025)
+        $listPeriode = [
+            [
+                'nama' => 'Q1 2024',
+                'start' => Carbon::create(2024, 1, 1),
+                'end'   => Carbon::create(2024, 3, 31),
+                'status'=> false // Sudah tutup
+            ],
+            [
+                'nama' => 'Q2 2024',
+                'start' => Carbon::create(2024, 4, 1),
+                'end'   => Carbon::create(2024, 6, 30),
+                'status'=> false
+            ],
+            [
+                'nama' => 'Q3 2024',
+                'start' => Carbon::create(2024, 7, 1),
+                'end'   => Carbon::create(2024, 9, 30),
+                'status'=> false
+            ],
+            [
+                'nama' => 'Q4 2024',
+                'start' => Carbon::create(2024, 10, 1),
+                'end'   => Carbon::create(2024, 12, 31),
+                'status'=> false
+            ],
+            [
+                'nama' => 'Q1 2025',
+                'start' => Carbon::create(2025, 1, 1),
+                'end'   => Carbon::create(2025, 3, 31),
+                'status'=> true // Periode Aktif Sekarang
+            ],
+        ];
 
         $countHeader = 0;
         $countDetail = 0;
 
-        foreach ($staffs as $staff) {
-            $divisiId = $staff->id_divisi;
+        // 3. Loop Setiap Periode
+        foreach ($listPeriode as $pData) {
             
-            // Tentukan Penilai: Manajer dari divisi karyawan tersebut
-            // Jika tidak ada manajer di divisi itu, pakai User ID 1 (Admin/HRD) sebagai fallback
-            $penilaiId = $managers[$divisiId]->user->id_user ?? 1;
-
-            // Buat Header Penilaian
-            $header = PenilaianHeader::create([
-                'id_karyawan' => $staff->id_karyawan,
-                'id_periode'  => $periode->id_periode,
-                'id_penilai'  => $penilaiId,
-                'created_at'  => Carbon::now()->subDays(rand(1, 10)), // Random tanggal input
+            // Buat Periode di Database
+            $periode = PeriodeEvaluasi::create([
+                'nama_periode'    => $pData['nama'],
+                'tanggal_mulai'   => $pData['start'],
+                'tanggal_selesai' => $pData['end'],
+                'pengumuman'      => !$pData['status'], // Yang lama sudah diumumkan
+                'status'          => $pData['status'],
             ]);
-            $countHeader++;
 
-            // Loop semua kategori & indikator untuk mencari yang cocok dengan divisi staff ini
-            foreach ($allKategoris as $kategori) {
-                foreach ($kategori->indikators as $indikator) {
-                    
-                    // Cek apakah indikator ini ditujukan untuk divisi karyawan ini?
-                    // target_divisi disimpan sebagai JSON array string ["1", "2"]
-                    $targetDivisi = $indikator->target_divisi ?? [];
-                    
-                    // Pastikan tipe data array agar in_array berfungsi
-                    if (is_string($targetDivisi)) {
-                        $targetDivisi = json_decode($targetDivisi, true);
-                    }
+            $this->command->info("📅 Memproses Periode: {$periode->nama_periode}...");
 
-                    if (in_array((string)$divisiId, $targetDivisi)) {
+            // 4. Loop Setiap Staff untuk Periode Ini
+            foreach ($staffs as $staff) {
+                $divisiId = $staff->id_divisi;
+                
+                // Tentukan Penilai (Manajer Divisi ybs / Fallback Admin)
+                $penilaiId = $managers[$divisiId]->user->id_user ?? 1;
+
+                // Buat Header Penilaian
+                // Kita acak tanggal created_at sesuai rentang periode agar terlihat real
+                $randomDate = $pData['start']->copy()->addDays(rand(1, 80));
+
+                $header = PenilaianHeader::create([
+                    'id_karyawan' => $staff->id_karyawan,
+                    'id_periode'  => $periode->id_periode,
+                    'id_penilai'  => $penilaiId,
+                    'created_at'  => $randomDate,
+                    'updated_at'  => $randomDate,
+                ]);
+                $countHeader++;
+
+                // 5. Isi Detail Nilai KPI
+                foreach ($allKategoris as $kategori) {
+                    foreach ($kategori->indikators as $indikator) {
                         
-                        // --- GENERATE NILAI DUMMY ---
-                        $nilaiTarget = $indikator->target->nilai_target ?? 100;
-                        $jenisTarget = $indikator->target->jenis_target ?? 'Maksimal';
-                        $satuan      = $indikator->satuan_pengukuran;
-
-                        $nilaiInput = 0;
-
-                        // Logika Nilai Random yang Realistis (70% - 110% dari target)
-                        if ($satuan == 'Skala 1-5') {
-                            // Random float antara 3.0 sampai 5.0
-                            $nilaiInput = rand(30, 50) / 10; 
-                        } elseif ($satuan == 'Persentase') {
-                            // Random antara 70 sampai 100 (atau lebih dikit)
-                            $nilaiInput = rand(85, 105); 
-                        } elseif ($satuan == 'Skala 1-100') {
-                            $nilaiInput = rand(75, 98);
-                        } else {
-                            // Default fallback
-                            $nilaiInput = $nilaiTarget; 
+                        // Cek Target Divisi
+                        $targetDivisi = $indikator->target_divisi ?? [];
+                        if (is_string($targetDivisi)) {
+                            $targetDivisi = json_decode($targetDivisi, true);
                         }
 
-                        // Buat Detail Penilaian
-                        PenilaianDetail::create([
-                            'id_penilaianHeader' => $header->id_penilaianHeader,
-                            'id_indikator'       => $indikator->id_indikator,
-                            'nilai_input'        => $nilaiInput,
-                            'catatan'            => $this->getRandomComment(),
-                            'created_at'         => $header->created_at,
-                        ]);
-                        $countDetail++;
+                        // Jika indikator ini cocok untuk divisi karyawan
+                        if (in_array((string)$divisiId, $targetDivisi)) {
+                            
+                            $nilaiTarget = $indikator->target->nilai_target ?? 100;
+                            $satuan      = $indikator->satuan_pengukuran;
+                            $nilaiInput  = 0;
+
+                            // --- LOGIKA NILAI RANDOM AGAR GRAFIK NAIK TURUN ---
+                            // Kita buat variasi agar ada yang performa naik, ada yang turun
+                            
+                            // Faktor keberuntungan karyawan ini (setiap karyawan punya hoki beda tiap periode)
+                            $luckFactor = rand(-15, 15); // +/- 15% deviasi dari target
+
+                            if ($satuan == 'Skala 1-5') {
+                                // Base 4.0 + luck
+                                $base = 40; // 4.0
+                                $result = $base + $luckFactor; 
+                                // Clamp min 20 max 50
+                                $result = max(20, min(50, $result));
+                                $nilaiInput = $result / 10; 
+
+                            } elseif ($satuan == 'Persentase') {
+                                // Base 100% + luck
+                                $base = 100;
+                                $result = $base + $luckFactor;
+                                // Clamp min 60 max 120
+                                $nilaiInput = max(60, min(125, $result));
+
+                            } elseif ($satuan == 'Skala 1-100') {
+                                // Base 85 + luck
+                                $base = 85;
+                                $result = $base + $luckFactor;
+                                $nilaiInput = max(50, min(100, $result));
+
+                            } else {
+                                $nilaiInput = $nilaiTarget; 
+                            }
+
+                            // Buat Detail
+                            PenilaianDetail::create([
+                                'id_penilaianHeader' => $header->id_penilaianHeader,
+                                'id_indikator'       => $indikator->id_indikator,
+                                'nilai_input'        => $nilaiInput,
+                                'catatan'            => $this->getRandomComment(),
+                                'created_at'         => $randomDate,
+                                'updated_at'         => $randomDate,
+                            ]);
+                            $countDetail++;
+                        }
                     }
                 }
             }
         }
 
-        $this->command->info("🎉 Selesai! Berhasil membuat {$countHeader} header penilaian dan {$countDetail} detail penilaian.");
+        $this->command->info("🎉 SELESAI! Total {$countHeader} Laporan & {$countDetail} Detail Nilai dibuat untuk 5 Periode.");
     }
 
     /**
@@ -123,14 +180,15 @@ class KpiSimulationSeeder extends Seeder
     private function getRandomComment()
     {
         $comments = [
-            'Kinerja sangat baik, pertahankan.',
-            'Cukup memuaskan, namun perlu teliti lagi.',
-            'Sudah mencapai target.',
-            'Perlu peningkatan di bulan depan.',
+            'Kinerja stabil.',
+            'Target tercapai dengan baik.',
+            'Perlu ditingkatkan lagi bulan depan.',
             'Excellent performance!',
-            null, // Kadang tidak ada catatan
+            null, 
             null,
-            'Terima kasih atas kerja kerasnya.',
+            null, // Perbanyak null agar tidak spam komentar
+            'Good job.',
+            'Ada sedikit keterlambatan, mohon diperbaiki.',
         ];
 
         return $comments[array_rand($comments)];
